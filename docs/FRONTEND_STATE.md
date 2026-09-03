@@ -12,7 +12,7 @@ After completing a frontend step, update this file.
 
 # CURRENT STEP
 
-## Step 1.0
+## Step 1.1
 
 Status: IMPLEMENTED
 
@@ -22,7 +22,7 @@ Public Experience
 
 Note:
 
-The public layout and landing-page structure have been implemented in the repository. Browser and responsive testing still needs to be performed locally before marking this step COMPLETED.
+The public layout and navbar have been implemented in the repository. Browser and responsive testing still needs to be performed locally before marking these steps COMPLETED.
 
 ---
 
@@ -52,6 +52,7 @@ src/
 │   ├── common/
 │   ├── farmer/
 │   ├── officer/
+│   ├── public/
 │   └── three/
 ├── context/
 ├── data/
@@ -92,12 +93,12 @@ IMPLEMENTED, TESTING PENDING
 Landing-page structure:
 IMPLEMENTED, TESTING PENDING
 
+Navbar:
+IMPLEMENTED, TESTING PENDING
+
 ---
 
 # NOT YET IMPLEMENTED
-
-Navbar:
-NOT STARTED
 
 Landing hero final implementation:
 NOT STARTED
@@ -183,9 +184,9 @@ A feature is COMPLETED only when:
 
 # NEXT STEP
 
-Step 1.1
+Step 1.2
 
-Navbar.
+Landing hero.
 
 ---
 
