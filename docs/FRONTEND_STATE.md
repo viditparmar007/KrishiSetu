@@ -12,13 +12,17 @@ After completing a frontend step, update this file.
 
 # CURRENT STEP
 
-## Step 0.9
+## Step 1.0
 
-Status: COMPLETED
+Status: IMPLEMENTED
 
 Current phase:
 
-Frontend Foundation
+Public Experience
+
+Note:
+
+The public layout and landing-page structure have been implemented in the repository. Browser and responsive testing still needs to be performed locally before marking this step COMPLETED.
 
 ---
 
@@ -59,7 +63,7 @@ src/
 
 ---
 
-# CURRENT UI STATUS
+# UI STATUS
 
 Base KrishiSetu visual language:
 COMPLETED
@@ -82,9 +86,45 @@ COMPLETED
 Reusable Button:
 COMPLETED
 
+Public layout:
+IMPLEMENTED, TESTING PENDING
+
+Landing-page structure:
+IMPLEMENTED, TESTING PENDING
+
 ---
 
 # NOT YET IMPLEMENTED
+
+Navbar:
+NOT STARTED
+
+Landing hero final implementation:
+NOT STARTED
+
+Hero 3D agriculture visualization:
+NOT STARTED
+
+Problem section:
+NOT STARTED
+
+How KrishiSetu works:
+NOT STARTED
+
+Benefits:
+NOT STARTED
+
+Feature ecosystem:
+NOT STARTED
+
+CTA:
+NOT STARTED
+
+Footer:
+NOT STARTED
+
+Responsive landing page:
+NOT STARTED
 
 Authentication:
 NOT STARTED
@@ -96,9 +136,6 @@ Axios API integration:
 NOT STARTED
 
 Authentication Context:
-NOT STARTED
-
-Landing page final implementation:
 NOT STARTED
 
 Farmer dashboard:
@@ -146,9 +183,9 @@ A feature is COMPLETED only when:
 
 # NEXT STEP
 
-Step 1.0
+Step 1.1
 
-Public layout / landing-page structure.
+Navbar.
 
 ---
 
