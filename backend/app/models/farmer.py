@@ -22,3 +22,9 @@ class Farmer(Base):
     )
 
     user = relationship("User", back_populates="farmer_profile")
+
+    farms = relationship(
+    "Farm",
+    back_populates="farmer",
+    cascade="all, delete-orphan",
+)
