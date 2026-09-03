@@ -1,9 +1,10 @@
+import Navbar from "../components/public/Navbar";
+
 function PublicLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#F7F8F3] text-[#17251B]">
-      <div className="min-h-screen">
-        <main>{children}</main>
-      </div>
+      <Navbar />
+      <main>{children}</main>
     </div>
   );
 }
