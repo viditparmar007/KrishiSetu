@@ -182,3 +182,26 @@ IMPLEMENTED
 Testing:
 
 Browser and responsive testing still pending locally. Step should be marked COMPLETED only after testing.
+
+---
+
+# Step 1.1
+
+## Public Navbar
+
+Created:
+
+frontend/src/components/public/Navbar.jsx
+
+Updated:
+
+frontend/src/layouts/PublicLayout.jsx
+
+Added the public navigation shell with KrishiSetu branding, Home / Explore navigation and a Get started action.
+
+Status:
+IMPLEMENTED
+
+Testing:
+
+Browser and responsive testing still pending locally. Step should be marked COMPLETED only after testing.
