@@ -159,3 +159,26 @@ Maintain a persistent record of frontend architecture, progress, rules and compl
 
 Status:
 COMPLETED
+
+---
+
+# Step 1.0
+
+## Public Layout / Landing-Page Structure
+
+Created:
+
+frontend/src/layouts/PublicLayout.jsx
+
+Updated:
+
+frontend/src/App.jsx
+
+The application now has a public layout shell and a structured landing-page foundation with discover, plan and track content sections.
+
+Status:
+IMPLEMENTED
+
+Testing:
+
+Browser and responsive testing still pending locally. Step should be marked COMPLETED only after testing.
