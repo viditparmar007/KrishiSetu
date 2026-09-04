@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 620" role="img" aria-label="Illustration of an Indian farmer using a phone">
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#edf8e9"/><stop offset="1" stop-color="#d9efd9"/></linearGradient>
+  <linearGradient id="shirt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fcf8d"/><stop offset="1" stop-color="#4e9d62"/></linearGradient>
+</defs>
+<circle cx="260" cy="285" r="235" fill="url(#sky)"/>
+<path d="M0 520 Q130 430 250 500 T520 470 V620 H0Z" fill="#a9d58f" opacity=".8"/>
+<path d="M0 570 Q150 490 300 545 T520 510 V620 H0Z" fill="#76b96b" opacity=".55"/>
+<path d="M170 570 Q250 485 350 570" fill="none" stroke="#5d9f58" stroke-width="18" stroke-linecap="round"/>
+<!-- neck --> <path d="M245 225 L275 225 L285 285 L235 285Z" fill="#9d603c"/>
+<!-- face --> <path d="M195 135 Q260 90 325 140 L315 220 Q300 260 260 270 Q215 260 198 218Z" fill="#a96843"/>
+<!-- ears --> <circle cx="199" cy="190" r="15" fill="#a96843"/><circle cx="321" cy="190" r="15" fill="#a96843"/>
+<!-- turban --> <path d="M190 155 Q185 82 260 62 Q338 82 330 160 L310 145 Q260 115 205 150Z" fill="#f8f7ee"/>
+<path d="M202 119 Q260 93 321 125" fill="none" stroke="#deddd4" stroke-width="13"/>
+<path d="M198 143 Q260 112 326 145" fill="none" stroke="#deddd4" stroke-width="10"/>
+<!-- hair --> <path d="M202 170 Q205 142 224 132" fill="none" stroke="#39281f" stroke-width="14" stroke-linecap="round"/>
+<!-- moustache --> <path d="M235 201 Q260 183 285 201 Q275 219 260 214 Q245 219 235 201Z" fill="#3a2920"/>
+<!-- smile --> <path d="M240 229 Q260 240 280 229" fill="none" stroke="#572f20" stroke-width="4" stroke-linecap="round"/>
+<!-- shirt body --> <path d="M145 560 Q145 320 235 275 L285 275 Q375 320 375 560Z" fill="url(#shirt)"/>
+<!-- scarf --> <path d="M220 275 L260 305 L300 275 L330 565 L285 565 L260 355 L235 565 L190 565Z" fill="#f5f4ea" opacity=".95"/>
+<path d="M226 296 L260 325 L294 296" fill="none" stroke="#d9d6c8" stroke-width="5"/>
+<!-- left arm --> <path d="M160 335 Q120 400 155 475 L220 430 L205 345Z" fill="#76b978"/>
+<!-- right arm holding phone --> <path d="M360 330 Q410 380 355 465 L292 420 L310 340Z" fill="#72b576"/>
+<!-- hand --> <path d="M300 412 Q325 395 350 415 L365 435 Q348 454 325 445 L300 430Z" fill="#a96843"/>
+<!-- phone --> <g transform="translate(290 355) rotate(-12)"><rect width="48" height="88" rx="7" fill="#26352d"/><rect x="5" y="7" width="38" height="62" rx="3" fill="#87b9a2"/><circle cx="24" cy="78" r="4" fill="#81938a"/><circle cx="35" cy="14" r="5" fill="#17211d"/></g>
+<!-- cloth end --> <path d="M300 560 L340 560 L355 615 L300 615Z" fill="#f5f4ea"/><path d="M190 560 L225 560 L210 615 L175 615Z" fill="#f5f4ea"/>
+<!-- small leaves --> <g fill="#7dbb72"><path d="M90 250 Q120 210 145 215 Q132 245 90 250Z"/><path d="M400 245 Q425 210 450 220 Q438 248 400 245Z"/></g>
+</svg>
