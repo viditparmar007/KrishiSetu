@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
   CheckCircle2, Clock3, IndianRupee, Leaf, MapPin, Search, ShieldCheck,
@@ -65,6 +65,11 @@ function ScrollExperience() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
   const [hoverCycle, setHoverCycle] = useState(0);
+
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    const nextScene = Math.min(scenes.length - 1, Math.floor(progress * scenes.length));
+    setActive(nextScene);
+  });
 
   const imageScale = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [1, 1.08, 1, 1.08, 1]);
   const imageX = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [0, -18, 16, -12, 0]);
