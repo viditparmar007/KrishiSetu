@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
@@ -34,128 +34,299 @@ const scenes = [
     kicker: "01 / DISCOVER",
     title: "Find the right centre.",
     text: "Start with a clear view of procurement centres around you, then move through the journey without hunting for information.",
-    image: "https://images.pexels.com/photos/29039798/pexels-photo-29039798.jpeg?cs=srgb&dl=pexels-alex-jaison-1690209427-29039798.jpg&fm=jpg",
+    image: "https://images.pexels.com/photos/29039798/pexels-photo-29039798.jpeg?auto=compress&cs=tinysrgb&w=1200",
     label: "Nearby procurement centre",
   },
   {
     kicker: "02 / PLAN",
     title: "Turn a trip into a plan.",
     text: "Choose a date and slot before you travel. Your visit becomes a visible step instead of another uncertain wait.",
-    image: "https://images.pexels.com/photos/20344348/pexels-photo-20344348.jpeg?cs=srgb&dl=pexels-equalstock-20344348.jpg&fm=jpg",
+    image: "https://images.pexels.com/photos/20344348/pexels-photo-20344348.jpeg?auto=compress&cs=tinysrgb&w=1200",
     label: "Visit slot confirmed",
   },
   {
     kicker: "03 / TRACK",
     title: "Know what happens next.",
     text: "From check-in to queue progress, the important moments stay visible so farmers are never left guessing.",
-    image: "https://images.pexels.com/photos/29798199/pexels-photo-29798199.jpeg?cs=srgb&dl=pexels-vinvivu-2201725-29798199.jpg&fm=jpg",
+    image: "https://images.pexels.com/photos/29798199/pexels-photo-29798199.jpeg?auto=compress&cs=tinysrgb&w=1200",
     label: "Queue moving · Token 18",
   },
   {
     kicker: "04 / PAYMENT",
     title: "Finish with clarity.",
     text: "Quality, weighment and payment become part of one transparent journey, from the first tap to the final receipt.",
-    image: "https://images.pexels.com/photos/16564262/pexels-photo-16564262.jpeg?cs=srgb&dl=pexels-theshantanukr-16564262.jpg&fm=jpg",
+    image: "https://images.pexels.com/photos/16564262/pexels-photo-16564262.jpeg?auto=compress&cs=tinysrgb&w=1200",
     label: "Payment processed",
   },
 ];
 
 function ScrollExperience() {
   const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
+  const wheelLock = useRef(false);
+  const wheelDelta = useRef(0);
 
-  useMotionValueEvent(scrollYProgress, "change", (progress) => {
-    const nextScene = Math.min(scenes.length - 1, Math.floor(progress * scenes.length));
-    setActive(nextScene);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end end"],
   });
 
-  const imageScale = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [1, 1.08, 1, 1.08, 1]);
-  const imageX = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [0, -18, 16, -12, 0]);
-  const imageY = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [0, 18, -12, 14, 0]);
-  const cardY = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [70, -10, 30, -12, 70]);
-  const cardRotate = useTransform(scrollYProgress, [0, 0.5, 1], [-2, 1.5, -2]);
-  const blur = useTransform(scrollYProgress, [0, 0.2, 0.5, 0.8, 1], [0, 5, 0, 6, 0]);
+  // Load and decode all story images before they are needed.
+  useEffect(() => {
+    const images = scenes.map(({ image }) => {
+      const img = new Image();
+      img.src = image;
+      return img.decode?.().catch(() => {});
+    });
+
+    Promise.all(images).catch(() => {});
+  }, []);
+
+  // Keep normal scrolling outside the story, but inside the story
+  // move exactly ONE scene at a time.
+  useEffect(() => {
+    const handleWheel = (event) => {
+      const section = ref.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const insideStory = rect.top <= 1 && rect.bottom >= window.innerHeight - 1;
+
+      if (!insideStory || wheelLock.current) return;
+
+      // Ignore tiny trackpad noise, then consume one gesture.
+      wheelDelta.current += event.deltaY;
+
+      if (Math.abs(wheelDelta.current) < 35) return;
+
+      const direction = wheelDelta.current > 0 ? 1 : -1;
+      wheelDelta.current = 0;
+
+      const current = activeRef.current;
+      const next = Math.max(
+        0,
+        Math.min(scenes.length - 1, current + direction)
+      );
+
+      // At the first/last scene, allow the page to leave the story normally.
+      if (next === current) return;
+
+      event.preventDefault();
+
+      activeRef.current = next;
+      setActive(next);
+      wheelLock.current = true;
+
+      const storyTop = section.getBoundingClientRect().top + window.scrollY;
+      const storyHeight = section.offsetHeight;
+      const scrollRange = Math.max(0, storyHeight - window.innerHeight);
+
+      // Center each scene in the viewport.
+      const targetTop =
+        storyTop + ((next + 0.5) / scenes.length) * scrollRange;
+
+      window.scrollTo({
+        top: targetTop,
+        behavior: "smooth",
+      });
+
+      // Let the smooth scroll finish before accepting another gesture.
+      window.setTimeout(() => {
+        wheelLock.current = false;
+      }, 650);
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
+  const imageScale = useTransform(
+    scrollYProgress,
+    [0, 0.25, 0.5, 0.75, 1],
+    [1, 1.012, 1, 1.012, 1]
+  );
+
+  const cardY = useTransform(
+    scrollYProgress,
+    [0, 0.25, 0.5, 0.75, 1],
+    [8, -2, 6, -2, 8]
+  );
+
+  const cardRotate = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [-0.15, 0.15, -0.15]
+  );
 
   return (
-    <section ref={ref} id="story" className="relative h-[420vh] bg-[#0b120d] text-white">
+    <section
+      ref={ref}
+      id="story"
+      className="relative h-[400vh] bg-[#0b120d] text-white"
+    >
       <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
-        <motion.div className="absolute inset-0" style={{ filter: blur.to((value) => `blur(${value}px)`) }}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_35%,rgba(90,168,91,.22),transparent_32%),radial-gradient(circle_at_15%_80%,rgba(22,107,62,.2),transparent_30%)]" />
-          <motion.div className="absolute inset-[-4%] opacity-40" style={{ scale: imageScale, x: imageX, y: imageY }}>
-            <img src={scenes[active].image} alt="" className="h-full w-full object-cover" />
-          </motion.div>
-          <div className="absolute inset-0 bg-[#071009]/70" />
-        </motion.div>
 
+        {/* BACKGROUND */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_35%,rgba(90,168,91,.22),transparent_32%),radial-gradient(circle_at_15%_80%,rgba(22,107,62,.2),transparent_30%)]" />
+
+          {/* All images stay mounted. Only opacity changes, so there is no
+              blank frame or network wait when the scene changes. */}
+          {scenes.map((scene, index) => (
+            <img
+              key={scene.kicker}
+              src={scene.image}
+              alt=""
+              decoding="async"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
+                index === active ? "opacity-[0.28]" : "opacity-0"
+              }`}
+            />
+          ))}
+
+          <div className="absolute inset-0 bg-[#071009]/75" />
+        </div>
+
+        {/* CONTENT */}
         <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
           <div className="grid w-full items-center gap-10 lg:grid-cols-[.8fr_1.2fr]">
+
+            {/* TEXT */}
             <div className="max-w-xl">
               <motion.p
                 key={`kicker-${active}`}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
                 className="font-mono text-xs font-semibold tracking-[.22em] text-[#a8d7ae]"
               >
                 {scenes[active].kicker}
               </motion.p>
+
               <motion.h2
                 key={`title-${active}`}
-                initial={{ opacity: 0, y: 28 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55 }}
+                transition={{
+                  duration: 0.35,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mt-5 max-w-2xl text-[clamp(3rem,7vw,6.6rem)] font-semibold leading-[.92] tracking-[-.055em]"
               >
                 {scenes[active].title}
               </motion.h2>
+
               <motion.p
                 key={`text-${active}`}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08, duration: 0.5 }}
+                transition={{ duration: 0.3, delay: 0.02 }}
                 className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg"
               >
                 {scenes[active].text}
               </motion.p>
+
               <div className="mt-9 flex items-center gap-5">
-                <span className="font-mono text-xs text-white/45">SCROLL TO EXPLORE</span>
-                <motion.span animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }} className="text-white/70">
+                <span className="font-mono text-xs text-white/45">
+                  SCROLL TO EXPLORE
+                </span>
+
+                <motion.span
+                  animate={{ y: [0, 4, 0] }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1.8,
+                    ease: "easeInOut",
+                  }}
+                  className="text-white/70"
+                >
                   <ArrowDownRight size={20} />
                 </motion.span>
               </div>
             </div>
 
+            {/* IMAGE */}
             <div className="relative mx-auto h-[510px] w-full max-w-[720px]">
               <motion.div
-                className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)]"
-                style={{ scale: imageScale, x: imageX, y: imageY }}
+                className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)] will-change-transform"
+                style={{ scale: imageScale }}
               >
-                <motion.img
-                  key={active}
-                  src={scenes[active].image}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  initial={{ opacity: 0, scale: 1.06 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                />
+                {scenes.map((scene, index) => (
+                  <img
+                    key={scene.kicker}
+                    src={scene.image}
+                    alt=""
+                    decoding="async"
+                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
+                      index === active ? "opacity-100" : "opacity-0"
+                    }`}
+                  />
+                ))}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-                <motion.div className="absolute bottom-7 left-7 right-7" style={{ y: cardY, rotate: cardRotate }}>
+
+                <motion.div
+                  className="absolute bottom-7 left-7 right-7 will-change-transform"
+                  style={{
+                    y: cardY,
+                    rotate: cardRotate,
+                  }}
+                >
                   <div className="max-w-[340px] rounded-2xl border border-white/15 bg-black/55 p-5 backdrop-blur-xl">
-                    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">Live state</p>
-                    <p className="mt-2 text-lg font-medium">{scenes[active].label}</p>
+                    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">
+                      Live state
+                    </p>
+
+                    <p className="mt-2 text-lg font-medium">
+                      {scenes[active].label}
+                    </p>
                   </div>
                 </motion.div>
               </motion.div>
 
+              {/* SCENE INDICATORS */}
               <div className="absolute bottom-2 left-0 flex gap-2">
                 {scenes.map((scene, index) => (
                   <button
                     key={scene.kicker}
                     type="button"
                     aria-label={`Go to ${scene.title}`}
-                    onClick={() => setActive(index)}
-                    className={`h-1.5 rounded-full transition-all ${index === active ? "w-12 bg-white" : "w-5 bg-white/25 hover:bg-white/50"}`}
+                    onClick={() => {
+                      const section = ref.current;
+                      if (!section) return;
+
+                      const storyTop =
+                        section.getBoundingClientRect().top + window.scrollY;
+                      const storyHeight = section.offsetHeight;
+                      const scrollRange = Math.max(
+                        0,
+                        storyHeight - window.innerHeight
+                      );
+
+                      activeRef.current = index;
+                      setActive(index);
+                      wheelLock.current = true;
+
+                      window.scrollTo({
+                        top:
+                          storyTop +
+                          ((index + 0.5) / scenes.length) * scrollRange,
+                        behavior: "smooth",
+                      });
+
+                      window.setTimeout(() => {
+                        wheelLock.current = false;
+                      }, 650);
+                    }}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      index === active
+                        ? "w-12 bg-white"
+                        : "w-5 bg-white/25 hover:bg-white/50"
+                    }`}
                   />
                 ))}
               </div>
@@ -163,17 +334,25 @@ function ScrollExperience() {
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/35">KRISHISETU / {String(active + 1).padStart(2, "0")}</div>
+        {/* COUNTER */}
+        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/35">
+          KRISHISETU / {String(active + 1).padStart(2, "0")}
+        </div>
+
+        {/* JOURNEY LABEL */}
         <div className="absolute right-5 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex">
           <span className="h-16 w-px bg-white/15" />
-          <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">JOURNEY</span>
+
+          <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">
+            JOURNEY
+          </span>
+
           <span className="h-16 w-px bg-white/15" />
         </div>
       </div>
     </section>
   );
 }
-
 function App() {
   return (
     <PublicLayout>
