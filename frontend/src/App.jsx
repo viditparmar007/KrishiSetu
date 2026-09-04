@@ -172,18 +172,27 @@ function HeroCarousel() {
             {heroScenes[active].text}
           </motion.p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-5">
-            <a
-              href="#story"
-              className="group inline-flex items-center gap-3 rounded-xl bg-white px-6 py-3.5 text-sm font-bold text-[#152018] transition hover:bg-[#eaf5e8]"
-            >
-              Explore the journey
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-            </a>
-            <span className="font-mono text-[10px] tracking-[.2em] text-white/45">
-              MOVE LEFT / RIGHT TO EXPLORE
-            </span>
-          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <a
+          href="#story"
+          className="inline-flex items-center justify-center gap-3 rounded-xl bg-[#176b3e] px-7 py-3.5 text-sm font-bold text-white transition hover:bg-[#115832]"
+          >
+          Get Started
+          <ArrowRight size={18} />
+          </a>
+
+         <button
+         type="button"
+         className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white hover:text-[#152018]"
+         >
+         Farmer Login
+         <UserRound size={17} />
+         </button>
+
+         <span className="ml-2 font-mono text-[10px] tracking-[.2em] text-white/45">
+         MOVE LEFT / RIGHT TO EXPLORE
+         </span>
+         </div>
 
           <div className="mt-10 flex items-center gap-3">
             {heroScenes.map((scene, index) => (
@@ -433,29 +442,67 @@ function App() {
         <JourneyBridge />
         <ScrollExperience />
 
+        <ScrollExperience />
+
         <section id="how-it-works" className="border-t border-[#edf0ed] bg-white py-14 sm:py-16">
           <div className="mx-auto w-full max-w-6xl px-6 sm:px-8 lg:px-10">
             <div className="text-center">
               <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#51a451]">How It Works</p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#111713] sm:text-4xl">Everything starts with a simpler journey</h2>
             </div>
+
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {steps.map(([title, text, Icon], index) => (
-                <motion.div whileHover={{ y: -7 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} key={title} className="relative flex min-h-[176px] flex-col rounded-2xl border border-[#e2e9e3] bg-white p-6 shadow-[0_6px_25px_rgba(20,60,35,.04)]">
+                <motion.div
+                  whileHover={{ y: -7 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                  key={title}
+                  className="relative flex min-h-[176px] flex-col rounded-2xl border border-[#e2e9e3] bg-white p-6 shadow-[0_6px_25px_rgba(20,60,35,.04)]"
+                >
                   <div className="flex items-start gap-4">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#176b3e] text-white"><Icon size={28} /></span>
-                    <div><h3 className="text-lg font-bold text-[#141a15]">{title}</h3><p className="mt-2 text-sm leading-6 text-[#68736b]">{text}</p></div>
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#176b3e] text-white">
+                      <Icon size={28} />
+                    </span>
+
+                    <div>
+                      <h3 className="text-lg font-bold text-[#141a15]">{title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-[#68736b]">{text}</p>
+                    </div>
                   </div>
-                  <a href="#story" className="mt-auto pt-4 text-sm font-bold text-[#276f40]">Explore <ArrowRight size={15} className="ml-1 inline" /></a>
-                  {index < 2 && <span className="pointer-events-none absolute -right-8 top-1/2 hidden text-3xl text-[#9bc8a2] md:block">→</span>}
+
+                  <a href="#story" className="mt-auto pt-4 text-sm font-bold text-[#276f40]">
+                    Explore <ArrowRight size={15} className="ml-1 inline" />
+                  </a>
+
+                  {index < 2 && (
+                    <span className="pointer-events-none absolute -right-8 top-1/2 hidden text-3xl text-[#9bc8a2] md:block">
+                      →
+                    </span>
+                  )}
                 </motion.div>
               ))}
             </div>
+
             <div className="mt-9 grid overflow-hidden rounded-2xl border border-[#e2e9e3] bg-[#f9fcf8] sm:grid-cols-5">
               {stats.map(([number, first, second, Icon], index) => (
-                <div key={number} className={`flex items-center gap-3 px-5 py-5 sm:justify-center ${index < 4 ? "border-b border-[#e2e9e3] sm:border-b-0 sm:border-r" : ""}`}>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e8f5e5] text-[#5aa85b]"><Icon size={20} /></span>
-                  <div><p className="text-xl font-bold text-[#132018]">{number}</p><p className="text-xs leading-4 text-[#667168]">{first}<br />{second}</p></div>
+                <div
+                  key={number}
+                  className={`flex items-center gap-3 px-5 py-5 sm:justify-center ${
+                    index < 4
+                      ? "border-b border-[#e2e9e3] sm:border-b-0 sm:border-r"
+                      : ""
+                  }`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e8f5e5] text-[#5aa85b]">
+                    <Icon size={20} />
+                  </span>
+
+                  <div>
+                    <p className="text-xl font-bold text-[#132018]">{number}</p>
+                    <p className="text-xs leading-4 text-[#667168]">
+                      {first}<br />{second}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -463,10 +510,7 @@ function App() {
         </section>
 
         <section id="contact" className="relative overflow-hidden bg-[#0c1510] px-6 py-24 text-white sm:px-8 lg:px-10">
-          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-            <div><p className="font-mono text-xs tracking-[.2em] text-[#9acda2]">CONTACT / KRISHISETU</p><h2 className="mt-4 max-w-2xl text-4xl font-semibold tracking-[-.04em] sm:text-6xl">Ready to make procurement feel simpler?</h2></div>
-            <a href="#home" className="inline-flex w-fit items-center gap-3 border-b border-white/40 pb-2 text-sm font-semibold hover:border-white">Back to top <ArrowRight size={17} /></a>
-          </div>
+          {/* existing Contact code */}
         </section>
       </main>
     </PublicLayout>
