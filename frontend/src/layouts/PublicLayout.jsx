@@ -16,8 +16,13 @@ function PublicLayout({ children }) {
   const [signupName, setSignupName] = useState("");
   const [signupMobile, setSignupMobile] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
+  const [signupState, setSignupState] = useState("");
+  const [signupDistrict, setSignupDistrict] = useState("");
+  const [signupVillage, setSignupVillage] = useState("");
+  const [signupLanguage, setSignupLanguage] = useState("en");
   const [error, setError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
 
   useEffect(() => {
     const openFarmerLogin = () => {
@@ -49,6 +54,7 @@ function PublicLayout({ children }) {
     setSignupOpen(false);
     setError("");
     setLoginLoading(false);
+    setSignupLoading(false);
   };
 
   const chooseRole = (nextRole) => {
@@ -72,8 +78,8 @@ function PublicLayout({ children }) {
       setError("Enter your Officer ID / User ID.");
       return;
     }
-    if (password.trim().length < 4) {
-      setError("Enter your password or PIN.");
+    if (password.trim().length < 6) {
+      setError("Password must be at least 6 characters.");
       return;
     }
 
@@ -111,12 +117,57 @@ function PublicLayout({ children }) {
     }
   };
 
-  const handleSignup = (event) => {
+  const handleSignup = async (event) => {
     event.preventDefault();
-    if (signupName.trim().length < 2) { setError("Enter your name."); return; }
+    setError("");
+
+    if (signupName.trim().length < 2) { setError("Enter your full name."); return; }
     if (signupMobile.replace(/\D/g, "").length !== 10) { setError("Enter a valid 10-digit mobile number."); return; }
-    if (signupPassword.trim().length < 6) { setError("Password must be at least 6 characters."); return; }
-    setError("The registration API also requires state, district and village. We will connect this form when those fields are added.");
+    if (signupPassword.length < 6) { setError("Password must be at least 6 characters."); return; }
+    if (!signupState.trim()) { setError("Enter your state."); return; }
+    if (!signupDistrict.trim()) { setError("Enter your district."); return; }
+    if (!signupVillage.trim()) { setError("Enter your village."); return; }
+
+    setSignupLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/v1/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: signupName.trim(),
+          phone: signupMobile.replace(/\D/g, ""),
+          password: signupPassword,
+          state: signupState.trim(),
+          district: signupDistrict.trim(),
+          village: signupVillage.trim(),
+          preferred_language: signupLanguage,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = Array.isArray(payload.detail)
+          ? payload.detail.map((item) => item.msg).join(" ")
+          : payload.detail;
+        throw new Error(detail || "Account creation failed. Please try again.");
+      }
+
+      setSignupOpen(false);
+      setError("");
+      setMobile(signupMobile.replace(/\D/g, ""));
+      setSignupName("");
+      setSignupMobile("");
+      setSignupPassword("");
+      setSignupState("");
+      setSignupDistrict("");
+      setSignupVillage("");
+      setSignupLanguage("en");
+      setRole("farmer");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to connect to the server.");
+    } finally {
+      setSignupLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -164,12 +215,20 @@ function PublicLayout({ children }) {
               </form>
 
               <div className="mt-5 flex items-center justify-between gap-3 border-t border-[#e6ebe6] pt-4"><div><p className="text-xs font-semibold text-[#202b23]">New to KrishiSetu?</p><p className="mt-0.5 text-[11px] text-[#7a847c]">Create an account below.</p></div><button type="button" onClick={() => { setSignupOpen(true); setError(""); }} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-[#b9c8bd] bg-white px-3.5 py-2 text-xs font-bold text-[#23402e] transition hover:bg-[#f4f8f4]"><UserPlus size={15} />Sign up</button></div>
-            </> : <form onSubmit={handleSignup} className="mt-5 space-y-4">
-              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Full name</span><input value={signupName} onChange={(event) => setSignupName(event.target.value)} autoComplete="name" placeholder="Enter your full name" className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-3 text-sm outline-none focus:border-[#176b3e] focus:ring-2 focus:ring-[#176b3e]/10" /></label>
-              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Mobile number</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3"><Phone size={16} className="text-[#718078]" /><span className="ml-2 border-r border-[#dce3dc] pr-2.5 text-xs text-[#68736b]">+91</span><input value={signupMobile} onChange={(event) => setSignupMobile(event.target.value.replace(/\D/g, "").slice(0, 10))} inputMode="numeric" autoComplete="tel" placeholder="98765 43210" className="w-full bg-transparent px-2.5 py-3 text-sm outline-none" /></div></label>
-              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Create password / PIN</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3"><LockKeyhole size={16} className="text-[#718078]" /><input type="password" value={signupPassword} onChange={(event) => setSignupPassword(event.target.value)} autoComplete="new-password" placeholder="Create password or PIN" className="w-full bg-transparent px-2.5 py-3 text-sm outline-none" /></div></label>
+            </> : <form onSubmit={handleSignup} className="mt-5 space-y-3.5">
+              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Full name</span><input value={signupName} onChange={(event) => setSignupName(event.target.value)} autoComplete="name" placeholder="Enter your full name" className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e] focus:ring-2 focus:ring-[#176b3e]/10" /></label>
+              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Mobile number</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3"><Phone size={16} className="text-[#718078]" /><span className="ml-2 border-r border-[#dce3dc] pr-2.5 text-xs text-[#68736b]">+91</span><input value={signupMobile} onChange={(event) => setSignupMobile(event.target.value.replace(/\D/g, "").slice(0, 10))} inputMode="numeric" autoComplete="tel" placeholder="98765 43210" className="w-full bg-transparent px-2.5 py-2.5 text-sm outline-none" /></div></label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">State</span><input value={signupState} onChange={(event) => setSignupState(event.target.value)} placeholder="Jharkhand" className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]" /></label>
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">District</span><input value={signupDistrict} onChange={(event) => setSignupDistrict(event.target.value)} placeholder="Ranchi" className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]" /></label>
+              </div>
+              <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Village</span><input value={signupVillage} onChange={(event) => setSignupVillage(event.target.value)} placeholder="Enter your village" className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]" /></label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Preferred language</span><select value={signupLanguage} onChange={(event) => setSignupLanguage(event.target.value)} className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]"><option value="en">English</option><option value="hi">Hindi</option></select></label>
+                <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Create password / PIN</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3"><LockKeyhole size={16} className="text-[#718078]" /><input type="password" value={signupPassword} onChange={(event) => setSignupPassword(event.target.value)} autoComplete="new-password" placeholder="At least 6 characters" className="w-full bg-transparent px-2.5 py-2.5 text-sm outline-none" /></div></label>
+              </div>
               {error && <p className="text-xs font-medium text-red-600">{error}</p>}
-              <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#176b3e] px-4 py-3 text-sm font-bold text-white">Create account<ArrowRight size={16} /></button>
+              <button type="submit" disabled={signupLoading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#176b3e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#115832] disabled:cursor-not-allowed disabled:opacity-60">{signupLoading ? "Creating account..." : "Create account"}{!signupLoading && <ArrowRight size={16} />}</button>
               <button type="button" onClick={() => { setSignupOpen(false); setError(""); }} className="w-full text-xs font-semibold text-[#176b3e] hover:underline">Back to login</button>
             </form>}
           </div>
