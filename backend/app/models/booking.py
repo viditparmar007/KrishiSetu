@@ -110,3 +110,13 @@ class Booking(Base):
         "Slot",
         back_populates="bookings",
     )
+    queue_entry = relationship(
+    "QueueEntry",
+    back_populates="booking",
+    uselist=False,
+    )
+    procurement = relationship(
+    "Procurement",
+    back_populates="booking",
+    uselist=False,
+  )

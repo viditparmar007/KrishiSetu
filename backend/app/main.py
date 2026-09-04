@@ -13,6 +13,12 @@ from app.models import (
     officer,
     slot,
     booking,
+    queue_entry,
+    procurement,
+    payment,
+    notification,
+    audit_log,
+   
 )  # noqa: F401
 
 from app.routes import (
@@ -25,11 +31,15 @@ from app.routes import (
     officer,
     admin,
     booking,
+    queue,
+    procurements,
+    payments,
+    notifications,
+    recommendations,
 )
 
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+
 
 
 # Create FastAPI app ONLY ONCE
@@ -41,7 +51,8 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=[settings.frontend_origin,
+    "http://localhost:5173",],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -78,6 +89,14 @@ app.include_router(booking.router)
 
 app.include_router(booking.router)
 
+#phase 5
+app.include_router(queue.router)
+
+#phase 6
+app.include_router(procurements.router)
+
+#phase 7
+app.include_router(payments.router)
 @app.get("/health")
 def health_check():
     return {
@@ -85,3 +104,8 @@ def health_check():
         "service": "KrishiSetu backend",
     }
 
+# phase 8
+app.include_router(notifications.router)
+
+#phase 9
+app.include_router(recommendations.router)

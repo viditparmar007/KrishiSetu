@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.models.user import User
-from app.models.officer import Officer
 from app.models.farmer import Farmer
 from app.models.enums import UserRole
 from app.schemas.auth import RegisterRequest, LoginRequest
@@ -23,7 +22,7 @@ def register_farmer(db: Session, payload: RegisterRequest) -> User:
         role=UserRole.FARMER,
     )
     db.add(user)
-    db.flush()
+    db.flush()  # gives `user` an id before we use it below
 
     farmer = Farmer(
         user_id=user.id,
@@ -43,17 +42,10 @@ def register_farmer(db: Session, payload: RegisterRequest) -> User:
 def authenticate_user(db: Session, payload: LoginRequest) -> User:
     invalid_error = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid phone number / Officer ID or password",
+        detail="Invalid phone number or password",
     )
 
-    identifier = payload.phone.strip()
-    user = db.query(User).filter(User.phone == identifier).first()
-
-    if not user:
-        officer = db.query(Officer).filter(Officer.employee_code == identifier).first()
-        if officer:
-            user = db.query(User).filter(User.id == officer.user_id).first()
-
+    user = db.query(User).filter(User.phone == payload.phone).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise invalid_error
 
@@ -62,14 +54,6 @@ def authenticate_user(db: Session, payload: LoginRequest) -> User:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="This account is inactive",
         )
-
-    if user.role == UserRole.OFFICER:
-        officer = db.query(Officer).filter(Officer.user_id == user.id).first()
-        if not officer or not officer.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="This officer account is inactive",
-            )
 
     return user
 
