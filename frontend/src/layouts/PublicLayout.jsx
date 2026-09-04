@@ -22,6 +22,20 @@ function PublicLayout({ children }) {
     return () => window.removeEventListener("open-farmer-login", openFarmerLogin);
   }, []);
 
+  useEffect(() => {
+    const handleStoryClick = (event) => {
+      const link = event.target.closest?.('a[href="#story"]');
+      if (!link) return;
+      const story = document.getElementById("story");
+      if (!story) return;
+      event.preventDefault();
+      story.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    document.addEventListener("click", handleStoryClick);
+    return () => document.removeEventListener("click", handleStoryClick);
+  }, []);
+
   const closeAuth = () => { setLoginOpen(false); setSignupOpen(false); setError(""); };
   const chooseRole = (nextRole) => {
     setRole(nextRole); setSignupOpen(false); setError(""); setMobile(""); setOfficerId(""); setPassword("");
