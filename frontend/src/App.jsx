@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
@@ -25,7 +25,7 @@ const stats = [
   ["10K+", "Farmers", "Onboarded", UserRound],
   ["250+", "Procurement", "Centres", MapPin],
   ["1.2L+", "Quintals", "Procured", Leaf],
-  ["₹320Cr+", "Payments", "Processed", IndianRupee],
+  ["â‚¹320Cr+", "Payments", "Processed", IndianRupee],
   ["4.8/5", "Farmer", "Satisfaction", Star],
 ];
 
@@ -49,7 +49,7 @@ const scenes = [
     title: "Know what happens next.",
     text: "From check-in to queue progress, the important moments stay visible so farmers are never left guessing.",
     image: "https://images.pexels.com/photos/29798199/pexels-photo-29798199.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    label: "Queue moving · Token 18",
+    label: "Queue moving Â· Token 18",
   },
   {
     kicker: "04 / PAYMENT",
@@ -361,18 +361,6 @@ function ScrollExperience() {
     return unsubscribe;
   }, [scrollYProgress]);
 
-  const imageScale = useTransform(
-    scrollYProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [1, 1.035, 1, 1.035, 1]
-  );
-
-  const imageX = useTransform(
-    scrollYProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [0, -10, 0, -10, 0]
-  );
-
   return (
     <section
       ref={ref}
@@ -380,64 +368,31 @@ function ScrollExperience() {
       className="relative h-[400vh] bg-[#071009] text-white"
     >
       <div className="sticky top-0 h-screen min-h-[680px] overflow-hidden">
-        {/* Background image changes with the scroll position. */}
-        <div className="absolute inset-0">
-          {scenes.map((scene, index) => (
-            <motion.img
-              key={scene.kicker}
-              src={scene.image}
-              alt=""
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover"
-              initial={false}
-              animate={{
-                opacity: index === active ? 0.34 : 0,
-                scale: index === active ? 1 : 1.04,
-              }}
-              transition={{
-                opacity: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
-                scale: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-              }}
-            />
-          ))}
+        <div className="absolute inset-0 bg-[#071009]" />
 
-          <div className="absolute inset-0 bg-[#071009]/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#071009]/95 via-[#071009]/65 to-[#071009]/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#071009]/80 via-transparent to-[#071009]/20" />
-        </div>
-
-        {/* Main Grounded-style split layout. */}
         <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
-          <div className="grid w-full items-center gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+          <div className="grid w-full items-center gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
+
             <div className="max-w-xl">
-              <motion.p
-                key={`story-kicker-${active}`}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45 }}
-                className="font-mono text-xs font-semibold tracking-[.24em] text-[#a8d7ae]"
-              >
+              <p className="font-mono text-xs font-semibold tracking-[.24em] text-[#a8d7ae]">
                 {scenes[active].kicker}
-              </motion.p>
+              </p>
 
               <motion.h2
-                key={`story-title-${active}`}
-                initial={{ opacity: 0, y: 28 }}
+                key={scenes[active].title}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.65,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
+                transition={{ duration: 0.55 }}
                 className="mt-5 max-w-xl text-[clamp(3rem,6.5vw,6.4rem)] font-semibold leading-[.9] tracking-[-.055em]"
               >
                 {scenes[active].title}
               </motion.h2>
 
               <motion.p
-                key={`story-text-${active}`}
+                key={scenes[active].text}
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.05 }}
+                transition={{ duration: 0.45 }}
                 className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg"
               >
                 {scenes[active].text}
@@ -451,38 +406,33 @@ function ScrollExperience() {
               </div>
             </div>
 
-            <div className="relative mx-auto h-[430px] w-full max-w-[760px] sm:h-[510px]">
+            <div className="relative h-[430px] w-full sm:h-[510px]">
               <motion.div
-                className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.42)]"
-                style={{ scale: imageScale, x: imageX }}
+                className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/15 shadow-[0_40px_100px_rgba(0,0,0,.45)]"
               >
                 {scenes.map((scene, index) => (
                   <motion.img
                     key={scene.kicker}
                     src={scene.image}
                     alt=""
-                    decoding="async"
                     className="absolute inset-0 h-full w-full object-cover"
                     initial={false}
                     animate={{
                       opacity: index === active ? 1 : 0,
+                      scale: index === active ? 1 : 1.04,
                     }}
-                    transition={{
-                      duration: 0.55,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
+                    transition={{ duration: 0.65 }}
                   />
                 ))}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
 
-                <div className="absolute bottom-7 left-7 right-7">
+                <div className="absolute bottom-7 left-7">
                   <motion.div
-                    key={`story-state-${active}`}
-                    initial={{ opacity: 0, y: 18 }}
+                    key={scenes[active].label}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="max-w-[350px] rounded-2xl border border-white/15 bg-black/55 p-5 backdrop-blur-xl"
+                    className="rounded-2xl border border-white/15 bg-[#071009]/80 px-5 py-4 backdrop-blur-xl"
                   >
                     <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">
                       Live state
@@ -492,9 +442,12 @@ function ScrollExperience() {
                     </p>
                   </motion.div>
                 </div>
+
+                <span className="absolute right-7 top-7 rounded-full border border-white/20 bg-black/25 px-4 py-2 font-mono text-[10px] tracking-[.2em]">
+                  {String(active + 1).padStart(2, "0")}
+                </span>
               </motion.div>
 
-              {/* Four progress marks. Scrolling naturally moves through them. */}
               <div className="absolute -bottom-10 left-0 flex items-center gap-2">
                 {scenes.map((scene, index) => (
                   <span
@@ -512,25 +465,17 @@ function ScrollExperience() {
                 </span>
               </div>
             </div>
+
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/30">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/30">
           KRISHISETU / JOURNEY
-        </div>
-
-        <div className="absolute right-5 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex">
-          <span className="h-16 w-px bg-white/15" />
-          <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">
-            JOURNEY
-          </span>
-          <span className="h-16 w-px bg-white/15" />
         </div>
       </div>
     </section>
   );
 }
-
 function App() {
   return (
     <PublicLayout>
@@ -593,7 +538,7 @@ function App() {
 
                   {index < 2 && (
                     <span className="pointer-events-none absolute -right-8 top-1/2 hidden text-3xl text-[#9bc8a2] md:block">
-                      →
+                      â†’
                     </span>
                   )}
                 </motion.div>
@@ -660,3 +605,4 @@ function App() {
 }
 
 export default App;
+
