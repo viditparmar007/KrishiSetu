@@ -1,32 +1,25 @@
 function Navbar() {
   return (
-    <header className="border-b border-[#DCE4DE] bg-[#F7F8F3]/95 backdrop-blur">
-      <nav
-        className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-6 px-6 sm:px-8 lg:px-10"
-        aria-label="Main navigation"
-      >
-        <a
-          href="#home"
-          className="text-lg font-bold tracking-tight text-[#1F6B45] focus:outline-none focus:ring-2 focus:ring-[#1F6B45] focus:ring-offset-2"
-        >
+    <header className="border-b border-[#e3e9e4] bg-white/95 backdrop-blur">
+      <nav className="mx-auto flex min-h-[74px] w-full max-w-7xl items-center justify-between gap-6 px-6 sm:px-8 lg:px-10" aria-label="Main navigation">
+        <a href="#home" className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#176b3e] focus:outline-none focus:ring-2 focus:ring-[#176b3e] focus:ring-offset-2">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#edf8e9]"><span className="text-xl">🌿</span></span>
           KrishiSetu
         </a>
 
-        <div className="hidden items-center gap-7 text-sm font-medium text-[#526057] sm:flex">
-          <a className="transition-colors hover:text-[#1F6B45]" href="#home">
-            Home
-          </a>
-          <a className="transition-colors hover:text-[#1F6B45]" href="#content">
-            Explore
-          </a>
+        <div className="hidden items-center gap-8 text-sm font-medium text-[#313a34] lg:flex">
+          <a className="transition-colors hover:text-[#176b3e]" href="#home">Home</a>
+          <a className="transition-colors hover:text-[#176b3e]" href="#centres">Centres</a>
+          <a className="transition-colors hover:text-[#176b3e]" href="#how-it-works">How it works</a>
+          <a className="transition-colors hover:text-[#176b3e]" href="#farmers">For Farmers</a>
+          <a className="transition-colors hover:text-[#176b3e]" href="#about">About us</a>
+          <a className="transition-colors hover:text-[#176b3e]" href="#contact">Contact</a>
         </div>
 
-        <a
-          href="#content"
-          className="inline-flex items-center justify-center rounded-xl bg-[#1F6B45] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#185638] focus:outline-none focus:ring-2 focus:ring-[#1F6B45] focus:ring-offset-2"
-        >
-          Get started
-        </a>
+        <div className="flex items-center gap-3">
+          <button type="button" className="hidden rounded-2xl border border-[#b9c8bd] bg-white px-6 py-2.5 text-sm font-bold text-[#23402e] transition hover:bg-[#f4f8f4] sm:inline-flex">Farmer Login</button>
+          <a href="#how-it-works" className="inline-flex items-center justify-center rounded-2xl bg-[#176b3e] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#115832]">Get Started</a>
+        </div>
       </nav>
     </header>
   );
