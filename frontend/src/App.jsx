@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
   CheckCircle2, Clock3, IndianRupee, Leaf, MapPin, Search, ShieldCheck,
@@ -60,19 +60,30 @@ const scenes = [
   },
 ];
 
+// Hero uses a separate image set so the existing scroll story keeps its original imagery.
+const heroScenes = scenes.map((scene, index) => ({
+  ...scene,
+  image: [
+    "https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=1800&q=85",
+    "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1800&q=85",
+    "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1800&q=85",
+    "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?auto=format&fit=crop&w=1800&q=85",
+  ][index],
+}));
+
 function HeroCarousel() {
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
   const timerRef = useRef(null);
 
   const changeScene = (direction) => {
-    const next = (activeRef.current + direction + scenes.length) % scenes.length;
+    const next = (activeRef.current + direction + heroScenes.length) % heroScenes.length;
     activeRef.current = next;
     setActive(next);
   };
 
   useEffect(() => {
-    const preload = scenes.map(({ image }) => {
+    const preload = heroScenes.map(({ image }) => {
       const img = new Image();
       img.src = image;
       return img.decode?.().catch(() => {});
@@ -81,7 +92,7 @@ function HeroCarousel() {
     Promise.all(preload).catch(() => {});
 
     timerRef.current = window.setInterval(() => {
-      const next = (activeRef.current + 1) % scenes.length;
+      const next = (activeRef.current + 1) % heroScenes.length;
       activeRef.current = next;
       setActive(next);
     }, 10000);
@@ -95,7 +106,7 @@ function HeroCarousel() {
       className="relative min-h-[calc(100vh-76px)] overflow-hidden bg-[#071009] text-white"
     >
       <div className="absolute inset-0">
-        {scenes.map((scene, index) => (
+        {heroScenes.map((scene, index) => (
           <motion.img
             key={scene.kicker}
             src={scene.image}
@@ -118,7 +129,6 @@ function HeroCarousel() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/15" />
       </div>
 
-      {/* Invisible desktop hover zones. Moving across the left/right side changes one image. */}
       <div
         className="absolute inset-y-0 left-0 z-20 hidden w-[32%] lg:block"
         onMouseEnter={() => changeScene(-1)}
@@ -139,7 +149,7 @@ function HeroCarousel() {
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="font-mono text-xs font-semibold tracking-[.24em] text-white/70"
           >
-            {scenes[active].kicker}
+            {heroScenes[active].kicker}
           </motion.p>
 
           <motion.h1
@@ -149,7 +159,7 @@ function HeroCarousel() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="mt-4 max-w-4xl text-[clamp(3.2rem,8vw,7rem)] font-semibold leading-[.9] tracking-[-.055em]"
           >
-            {scenes[active].title}
+            {heroScenes[active].title}
           </motion.h1>
 
           <motion.p
@@ -159,7 +169,7 @@ function HeroCarousel() {
             transition={{ duration: 0.5, delay: 0.08 }}
             className="mt-6 max-w-xl text-base leading-7 text-white/72 sm:text-lg"
           >
-            {scenes[active].text}
+            {heroScenes[active].text}
           </motion.p>
 
           <div className="mt-8 flex flex-wrap items-center gap-5">
@@ -176,7 +186,7 @@ function HeroCarousel() {
           </div>
 
           <div className="mt-10 flex items-center gap-3">
-            {scenes.map((scene, index) => (
+            {heroScenes.map((scene, index) => (
               <button
                 key={scene.kicker}
                 type="button"
@@ -191,7 +201,7 @@ function HeroCarousel() {
               />
             ))}
             <span className="ml-3 font-mono text-[10px] tracking-[.2em] text-white/45">
-              {String(active + 1).padStart(2, "0")} / {String(scenes.length).padStart(2, "0")}
+              {String(active + 1).padStart(2, "0")} / {String(heroScenes.length).padStart(2, "0")}
             </span>
           </div>
         </div>
