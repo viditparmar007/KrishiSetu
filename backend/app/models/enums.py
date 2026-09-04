@@ -22,3 +22,10 @@ class SlotStatus(str, enum.Enum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
     CANCELLED = "CANCELLED"
+
+class BookingStatus(str, enum.Enum):
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
+    CHECKED_IN = "CHECKED_IN"
+    COMPLETED = "COMPLETED"
+    NO_SHOW = "NO_SHOW"    

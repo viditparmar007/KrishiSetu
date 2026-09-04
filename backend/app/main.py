@@ -12,6 +12,7 @@ from app.models import (
     centre,
     officer,
     slot,
+    booking,
 )  # noqa: F401
 
 from app.routes import (
@@ -23,6 +24,7 @@ from app.routes import (
     centres,
     officer,
     admin,
+    booking,
 )
 
 
@@ -33,9 +35,8 @@ Base.metadata.create_all(bind=engine)
 # Create FastAPI app ONLY ONCE
 app = FastAPI(
     title="KrishiSetu API",
-    version="0.3.0",
+    version="0.4.0",
 )
-
 
 # CORS
 app.add_middleware(
@@ -61,6 +62,21 @@ app.include_router(centres.router)
 app.include_router(officer.router)
 app.include_router(admin.router)
 
+# Phase 4
+app.include_router(auth.router)
+app.include_router(farmers.router)
+
+app.include_router(farms.router)
+app.include_router(crops.router)
+app.include_router(dashboard.router)
+
+app.include_router(centres.router)
+app.include_router(officer.router)
+app.include_router(admin.router)
+
+app.include_router(booking.router)
+
+app.include_router(booking.router)
 
 @app.get("/health")
 def health_check():
@@ -68,3 +84,4 @@ def health_check():
         "status": "ok",
         "service": "KrishiSetu backend",
     }
+

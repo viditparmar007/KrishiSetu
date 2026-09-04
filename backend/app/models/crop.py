@@ -33,3 +33,8 @@ class Crop(Base):
     )
 
     farm = relationship("Farm", back_populates="crops")
+
+    bookings = relationship(
+    "Booking",
+    back_populates="crop",
+    )

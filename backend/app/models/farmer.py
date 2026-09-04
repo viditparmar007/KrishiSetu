@@ -27,4 +27,9 @@ class Farmer(Base):
     "Farm",
     back_populates="farmer",
     cascade="all, delete-orphan",
-)
+    )
+
+    bookings = relationship(
+    "Booking",
+    back_populates="farmer",
+    )

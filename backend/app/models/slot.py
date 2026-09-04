@@ -104,6 +104,10 @@ class Slot(Base):
         "ProcurementCentre",
         back_populates="slots",
     )
+    bookings = relationship(
+    "Booking",
+    back_populates="slot",
+   )
 
     @property
     def available_farmer_capacity(self) -> int:

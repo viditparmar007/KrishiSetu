@@ -107,3 +107,7 @@ class ProcurementCentre(Base):
         back_populates="centre",
         cascade="all, delete-orphan",
     )
+    bookings = relationship(
+    "Booking",
+    back_populates="centre",
+     )

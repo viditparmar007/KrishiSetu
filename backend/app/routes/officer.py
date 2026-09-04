@@ -33,6 +33,16 @@ from app.services.slot_service import (
     create_slot_for_centre,
     update_slot,
 )
+from datetime import date
+
+from fastapi import Query
+
+from app.models.enums import BookingStatus
+from app.schemas.booking import BookingOut
+
+from app.services.booking_service import (
+    list_officer_centre_bookings,
+)
 
 
 router = APIRouter(
@@ -137,3 +147,29 @@ def officer_update_slot(
         )
 
     return slot
+
+@router.get(
+    "/bookings",
+    response_model=list[BookingOut],
+)
+def officer_bookings(
+    booking_date: date | None = Query(
+        default=None
+    ),
+
+    booking_status: BookingStatus | None = Query(
+        default=None
+    ),
+
+    db: Session = Depends(get_db),
+
+    current_user: User = Depends(
+        require_role("OFFICER")
+    ),
+):
+    return list_officer_centre_bookings(
+        db,
+        current_user,
+        booking_date,
+        booking_status,
+    )
