@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
@@ -224,55 +224,120 @@ function HeroCarousel() {
   );
 }
 
-function JourneyBridge() {
+function GroundedContent() {
   return (
-    <section className="relative overflow-hidden bg-[#050805] text-white">
-      <div className="relative mx-auto h-[72vh] min-h-[560px] max-h-[760px] w-full max-w-[1500px] overflow-hidden">
-        <motion.img
-          src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1800&q=88"
-          alt="Fresh produce ready for procurement"
-          className="absolute inset-0 h-full w-full object-cover"
-          initial={{ scale: 1.06 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/15" />
-        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#050805] to-transparent" />
+    <>
+      {/* OUR WHY */}
+      <section
+        id="why"
+        className="relative overflow-hidden bg-white px-6 py-24 text-[#101510] sm:px-8 lg:px-10"
+      >
+        <div className="mx-auto grid w-full max-w-7xl gap-14 lg:grid-cols-[0.3fr_1fr] lg:gap-20">
+          <div>
+            <p className="font-mono text-xs tracking-[.22em] text-[#7b847d]">
+              OUR WHY
+            </p>
+          </div>
 
-        <div className="absolute inset-x-0 bottom-12 px-6 sm:px-10 lg:px-16">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-4xl">
-              <p className="font-mono text-[10px] font-semibold tracking-[.28em] text-white/60">
-                THE JOURNEY / FROM FARM TO PAYMENT
-              </p>
-              <h2 className="mt-4 max-w-4xl text-[clamp(2.8rem,7vw,6.5rem)] font-semibold leading-[.9] tracking-[-.055em]">
-                Less uncertainty.
-                <br />
-                More control.
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+            <div>
+              <h2 className="max-w-5xl text-[clamp(3rem,6.5vw,6.5rem)] font-medium leading-[.92] tracking-[-.055em]">
+                Procurement should feel clear from the first step.
               </h2>
+
+              <p className="mt-8 max-w-3xl text-lg leading-8 text-[#69736b] sm:text-xl">
+                Farmers should not have to hunt for information, guess when
+                to visit, or wonder what happens next. KrishiSetu brings the
+                journey into one connected experience.
+              </p>
             </div>
-            <div className="max-w-xs pb-1 text-sm leading-6 text-white/65">
-              One connected experience for discovering a centre, planning a visit, tracking the queue and getting paid.
+
+            <div className="relative h-[280px] overflow-hidden rounded-sm bg-[#e8ece7]">
+              <img
+                src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=85"
+                alt="Farmland and agricultural landscape"
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="absolute right-6 top-6 hidden items-center gap-3 font-mono text-[10px] tracking-[.2em] text-white/50 sm:flex lg:right-10 lg:top-8">
-          <span className="h-px w-10 bg-white/25" />
-          KRISHISETU / 01
+      {/* OUR SERVICES */}
+      <section
+        id="services"
+        className="relative overflow-hidden bg-[#f4f6f2] px-6 py-24 text-[#101510] sm:px-8 lg:px-10"
+      >
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="grid gap-14 lg:grid-cols-[0.3fr_1fr] lg:gap-20">
+            <div>
+              <p className="font-mono text-xs tracking-[.22em] text-[#7b847d]">
+                OUR SERVICES
+              </p>
+            </div>
+
+            <div>
+              <div className="grid gap-10 lg:grid-cols-[1fr_0.8fr] lg:items-start">
+                <div>
+                  <h2 className="max-w-5xl text-[clamp(3rem,6.5vw,6.5rem)] font-medium leading-[.92] tracking-[-.055em]">
+                    Discover / Plan / Track / Get Paid
+                  </h2>
+
+                  <p className="mt-8 max-w-3xl text-lg leading-8 text-[#69736b] sm:text-xl">
+                    One connected experience for discovering a procurement
+                    centre, planning a visit, tracking progress and receiving
+                    payment.
+                  </p>
+                </div>
+
+                <div className="overflow-hidden rounded-sm">
+                  <img
+                    src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1200&q=85"
+                    alt="Fresh vegetables at a local market"
+                    className="h-[300px] w-full object-cover"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-16 grid gap-px overflow-hidden rounded-sm bg-[#d8ded8] md:grid-cols-3">
+                <div className="bg-[#f4f6f2] p-8">
+                  <p className="font-mono text-xs tracking-[.18em] text-[#7b847d]">01</p>
+                  <h3 className="mt-12 text-3xl font-medium">Discover</h3>
+                  <p className="mt-4 leading-7 text-[#69736b]">
+                    Find procurement centres, timings and the information you
+                    need before leaving the farm.
+                  </p>
+                </div>
+
+                <div className="bg-[#f4f6f2] p-8">
+                  <p className="font-mono text-xs tracking-[.18em] text-[#7b847d]">02</p>
+                  <h3 className="mt-12 text-3xl font-medium">Plan</h3>
+                  <p className="mt-4 leading-7 text-[#69736b]">
+                    Choose your visit and arrive knowing what the next step of
+                    the journey looks like.
+                  </p>
+                </div>
+
+                <div className="bg-[#f4f6f2] p-8">
+                  <p className="font-mono text-xs tracking-[.18em] text-[#7b847d]">03</p>
+                  <h3 className="mt-12 text-3xl font-medium">Track</h3>
+                  <p className="mt-4 leading-7 text-[#69736b]">
+                    Follow your queue and procurement progress without
+                    constantly asking what happens next.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }
-
 function ScrollExperience() {
   const ref = useRef(null);
   const [active, setActive] = useState(0);
   const activeRef = useRef(0);
-  const wheelLock = useRef(false);
-  const wheelDelta = useRef(0);
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -280,153 +345,185 @@ function ScrollExperience() {
   });
 
   useEffect(() => {
-    const images = scenes.map(({ image }) => {
-      const img = new Image();
-      img.src = image;
-      return img.decode?.().catch(() => {});
+    const unsubscribe = scrollYProgress.on("change", (value) => {
+      const next = Math.min(
+        scenes.length - 1,
+        Math.max(0, Math.floor(value * scenes.length))
+      );
+
+      if (next !== activeRef.current) {
+        activeRef.current = next;
+        setActive(next);
+      }
     });
 
-    Promise.all(images).catch(() => {});
-  }, []);
+    return unsubscribe;
+  }, [scrollYProgress]);
 
-  useEffect(() => {
-    const handleWheel = (event) => {
-      const section = ref.current;
-      if (!section) return;
+  const imageScale = useTransform(
+    scrollYProgress,
+    [0, 0.25, 0.5, 0.75, 1],
+    [1, 1.035, 1, 1.035, 1]
+  );
 
-      const rect = section.getBoundingClientRect();
-      const insideStory = rect.top <= 1 && rect.bottom >= window.innerHeight - 1;
-
-      if (!insideStory || wheelLock.current) return;
-
-      wheelDelta.current += event.deltaY;
-
-      if (Math.abs(wheelDelta.current) < 35) return;
-
-      const direction = wheelDelta.current > 0 ? 1 : -1;
-      wheelDelta.current = 0;
-
-      const current = activeRef.current;
-      const next = Math.max(0, Math.min(scenes.length - 1, current + direction));
-
-      if (next === current) return;
-
-      event.preventDefault();
-
-      activeRef.current = next;
-      setActive(next);
-      wheelLock.current = true;
-
-      const storyTop = section.getBoundingClientRect().top + window.scrollY;
-      const storyHeight = section.offsetHeight;
-      const scrollRange = Math.max(0, storyHeight - window.innerHeight);
-
-      const targetTop = storyTop + ((next + 0.5) / scenes.length) * scrollRange;
-
-      window.scrollTo({
-        top: targetTop,
-        behavior: "smooth",
-      });
-
-      window.setTimeout(() => {
-        wheelLock.current = false;
-      }, 650);
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-    };
-  }, []);
-
-  const imageScale = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [1, 1.012, 1, 1.012, 1]);
-  const cardY = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [8, -2, 6, -2, 8]);
-  const cardRotate = useTransform(scrollYProgress, [0, 0.5, 1], [-0.15, 0.15, -0.15]);
+  const imageX = useTransform(
+    scrollYProgress,
+    [0, 0.25, 0.5, 0.75, 1],
+    [0, -10, 0, -10, 0]
+  );
 
   return (
-    <section ref={ref} id="story" className="relative h-[400vh] bg-[#0b120d] text-white">
-      <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_35%,rgba(90,168,91,.22),transparent_32%),radial-gradient(circle_at_15%_80%,rgba(22,107,62,.2),transparent_30%)]" />
+    <section
+      ref={ref}
+      id="story"
+      className="relative h-[400vh] bg-[#071009] text-white"
+    >
+      <div className="sticky top-0 h-screen min-h-[680px] overflow-hidden">
+        {/* Background image changes with the scroll position. */}
+        <div className="absolute inset-0">
           {scenes.map((scene, index) => (
-            <img
+            <motion.img
               key={scene.kicker}
               src={scene.image}
               alt=""
               decoding="async"
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${index === active ? "opacity-[0.28]" : "opacity-0"}`}
+              className="absolute inset-0 h-full w-full object-cover"
+              initial={false}
+              animate={{
+                opacity: index === active ? 0.34 : 0,
+                scale: index === active ? 1 : 1.04,
+              }}
+              transition={{
+                opacity: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+                scale: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+              }}
             />
           ))}
-          <div className="absolute inset-0 bg-[#071009]/75" />
+
+          <div className="absolute inset-0 bg-[#071009]/70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071009]/95 via-[#071009]/65 to-[#071009]/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#071009]/80 via-transparent to-[#071009]/20" />
         </div>
 
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
-          <div className="grid w-full items-center gap-10 lg:grid-cols-[.8fr_1.2fr]">
+        {/* Main Grounded-style split layout. */}
+        <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
+          <div className="grid w-full items-center gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
             <div className="max-w-xl">
-              <motion.p key={`kicker-${active}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: "easeOut" }} className="font-mono text-xs font-semibold tracking-[.22em] text-[#a8d7ae]">
+              <motion.p
+                key={`story-kicker-${active}`}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45 }}
+                className="font-mono text-xs font-semibold tracking-[.24em] text-[#a8d7ae]"
+              >
                 {scenes[active].kicker}
               </motion.p>
-              <motion.h2 key={`title-${active}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="mt-5 max-w-2xl text-[clamp(3rem,7vw,6.6rem)] font-semibold leading-[.92] tracking-[-.055em]">
+
+              <motion.h2
+                key={`story-title-${active}`}
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.65,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                className="mt-5 max-w-xl text-[clamp(3rem,6.5vw,6.4rem)] font-semibold leading-[.9] tracking-[-.055em]"
+              >
                 {scenes[active].title}
               </motion.h2>
-              <motion.p key={`text-${active}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.02 }} className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg">
+
+              <motion.p
+                key={`story-text-${active}`}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.05 }}
+                className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg"
+              >
                 {scenes[active].text}
               </motion.p>
-              <div className="mt-9 flex items-center gap-5">
-                <span className="font-mono text-xs text-white/45">SCROLL TO EXPLORE</span>
-                <motion.span animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} className="text-white/70">
-                  <ArrowDownRight size={20} />
-                </motion.span>
+
+              <div className="mt-10 flex items-center gap-4">
+                <span className="font-mono text-[10px] tracking-[.22em] text-white/45">
+                  SCROLL TO EXPLORE
+                </span>
+                <ArrowDownRight size={19} className="text-white/65" />
               </div>
             </div>
 
-            <div className="relative mx-auto h-[510px] w-full max-w-[720px]">
-              <motion.div className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)] will-change-transform" style={{ scale: imageScale }}>
+            <div className="relative mx-auto h-[430px] w-full max-w-[760px] sm:h-[510px]">
+              <motion.div
+                className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.42)]"
+                style={{ scale: imageScale, x: imageX }}
+              >
                 {scenes.map((scene, index) => (
-                  <img key={scene.kicker} src={scene.image} alt="" decoding="async" className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${index === active ? "opacity-100" : "opacity-0"}`} />
-                ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-                <motion.div className="absolute bottom-7 left-7 right-7 will-change-transform" style={{ y: cardY, rotate: cardRotate }}>
-                  <div className="max-w-[340px] rounded-2xl border border-white/15 bg-black/55 p-5 backdrop-blur-xl">
-                    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">Live state</p>
-                    <p className="mt-2 text-lg font-medium">{scenes[active].label}</p>
-                  </div>
-                </motion.div>
-              </motion.div>
-
-              <div className="absolute bottom-2 left-0 flex gap-2">
-                {scenes.map((scene, index) => (
-                  <button
+                  <motion.img
                     key={scene.kicker}
-                    type="button"
-                    aria-label={`Go to ${scene.title}`}
-                    onClick={() => {
-                      const section = ref.current;
-                      if (!section) return;
-                      const storyTop = section.getBoundingClientRect().top + window.scrollY;
-                      const storyHeight = section.offsetHeight;
-                      const scrollRange = Math.max(0, storyHeight - window.innerHeight);
-                      activeRef.current = index;
-                      setActive(index);
-                      wheelLock.current = true;
-                      window.scrollTo({ top: storyTop + ((index + 0.5) / scenes.length) * scrollRange, behavior: "smooth" });
-                      window.setTimeout(() => { wheelLock.current = false; }, 650);
+                    src={scene.image}
+                    alt=""
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    initial={false}
+                    animate={{
+                      opacity: index === active ? 1 : 0,
                     }}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${index === active ? "w-12 bg-white" : "w-5 bg-white/25 hover:bg-white/50"}`}
+                    transition={{
+                      duration: 0.55,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
                   />
                 ))}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10" />
+
+                <div className="absolute bottom-7 left-7 right-7">
+                  <motion.div
+                    key={`story-state-${active}`}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="max-w-[350px] rounded-2xl border border-white/15 bg-black/55 p-5 backdrop-blur-xl"
+                  >
+                    <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">
+                      Live state
+                    </p>
+                    <p className="mt-2 text-lg font-medium">
+                      {scenes[active].label}
+                    </p>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              {/* Four progress marks. Scrolling naturally moves through them. */}
+              <div className="absolute -bottom-10 left-0 flex items-center gap-2">
+                {scenes.map((scene, index) => (
+                  <span
+                    key={scene.kicker}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      index === active
+                        ? "w-12 bg-white"
+                        : "w-5 bg-white/25"
+                    }`}
+                  />
+                ))}
+
+                <span className="ml-3 font-mono text-[10px] tracking-[.2em] text-white/40">
+                  {String(active + 1).padStart(2, "0")} /{" "}
+                  {String(scenes.length).padStart(2, "0")}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/35">
-          KRISHISETU / {String(active + 1).padStart(2, "0")}
+        <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/30">
+          KRISHISETU / JOURNEY
         </div>
+
         <div className="absolute right-5 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex">
           <span className="h-16 w-px bg-white/15" />
-          <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">JOURNEY</span>
+          <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">
+            JOURNEY
+          </span>
           <span className="h-16 w-px bg-white/15" />
         </div>
       </div>
@@ -439,24 +536,36 @@ function App() {
     <PublicLayout>
       <main>
         <HeroCarousel />
-        <JourneyBridge />
-        <ScrollExperience />
+
+        <GroundedContent />
 
         <ScrollExperience />
 
-        <section id="how-it-works" className="border-t border-[#edf0ed] bg-white py-14 sm:py-16">
+        <section
+          id="how-it-works"
+          className="border-t border-[#edf0ed] bg-white py-14 sm:py-16"
+        >
           <div className="mx-auto w-full max-w-6xl px-6 sm:px-8 lg:px-10">
             <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#51a451]">How It Works</p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#111713] sm:text-4xl">Everything starts with a simpler journey</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.12em] text-[#51a451]">
+                How It Works
+              </p>
+
+              <h2 className="mt-2 text-3xl font-bold tracking-tight text-[#111713] sm:text-4xl">
+                Everything starts with a simpler journey
+              </h2>
             </div>
 
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {steps.map(([title, text, Icon], index) => (
                 <motion.div
-                  whileHover={{ y: -7 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
                   key={title}
+                  whileHover={{ y: -7 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 22,
+                  }}
                   className="relative flex min-h-[176px] flex-col rounded-2xl border border-[#e2e9e3] bg-white p-6 shadow-[0_6px_25px_rgba(20,60,35,.04)]"
                 >
                   <div className="flex items-start gap-4">
@@ -465,12 +574,20 @@ function App() {
                     </span>
 
                     <div>
-                      <h3 className="text-lg font-bold text-[#141a15]">{title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-[#68736b]">{text}</p>
+                      <h3 className="text-lg font-bold text-[#141a15]">
+                        {title}
+                      </h3>
+
+                      <p className="mt-2 text-sm leading-6 text-[#68736b]">
+                        {text}
+                      </p>
                     </div>
                   </div>
 
-                  <a href="#story" className="mt-auto pt-4 text-sm font-bold text-[#276f40]">
+                  <a
+                    href="#story"
+                    className="mt-auto pt-4 text-sm font-bold text-[#276f40]"
+                  >
                     Explore <ArrowRight size={15} className="ml-1 inline" />
                   </a>
 
@@ -498,9 +615,14 @@ function App() {
                   </span>
 
                   <div>
-                    <p className="text-xl font-bold text-[#132018]">{number}</p>
+                    <p className="text-xl font-bold text-[#132018]">
+                      {number}
+                    </p>
+
                     <p className="text-xs leading-4 text-[#667168]">
-                      {first}<br />{second}
+                      {first}
+                      <br />
+                      {second}
                     </p>
                   </div>
                 </div>
@@ -509,8 +631,28 @@ function App() {
           </div>
         </section>
 
-        <section id="contact" className="relative overflow-hidden bg-[#0c1510] px-6 py-24 text-white sm:px-8 lg:px-10">
-          {/* existing Contact code */}
+        <section
+          id="contact"
+          className="relative overflow-hidden bg-[#0c1510] px-6 py-24 text-white sm:px-8 lg:px-10"
+        >
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-mono text-xs tracking-[.2em] text-[#9acda2]">
+                CONTACT / KRISHISETU
+              </p>
+
+              <h2 className="mt-4 max-w-2xl text-4xl font-semibold tracking-[-.04em] sm:text-6xl">
+                Ready to make procurement feel simpler?
+              </h2>
+            </div>
+
+            <a
+              href="#home"
+              className="inline-flex w-fit items-center gap-3 border-b border-white/40 pb-2 text-sm font-semibold hover:border-white"
+            >
+              Back to top <ArrowRight size={17} />
+            </a>
+          </div>
         </section>
       </main>
     </PublicLayout>
@@ -518,3 +660,7 @@ function App() {
 }
 
 export default App;
+
+
+
+
