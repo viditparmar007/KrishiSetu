@@ -34,28 +34,28 @@ const scenes = [
     kicker: "01 / DISCOVER",
     title: "Find the right centre.",
     text: "Start with a clear view of procurement centres around you, then move through the journey without hunting for information.",
-    image: "/scroll-farm.svg",
+    image: "https://images.pexels.com/photos/29039798/pexels-photo-29039798.jpeg?cs=srgb&dl=pexels-alex-jaison-1690209427-29039798.jpg&fm=jpg",
     label: "Nearby procurement centre",
   },
   {
     kicker: "02 / PLAN",
     title: "Turn a trip into a plan.",
     text: "Choose a date and slot before you travel. Your visit becomes a visible step instead of another uncertain wait.",
-    image: "/scroll-centre.svg",
+    image: "https://images.pexels.com/photos/20344348/pexels-photo-20344348.jpeg?cs=srgb&dl=pexels-equalstock-20344348.jpg&fm=jpg",
     label: "Visit slot confirmed",
   },
   {
     kicker: "03 / TRACK",
     title: "Know what happens next.",
     text: "From check-in to queue progress, the important moments stay visible so farmers are never left guessing.",
-    image: "/scroll-queue.svg",
+    image: "https://images.pexels.com/photos/29798199/pexels-photo-29798199.jpeg?cs=srgb&dl=pexels-vinvivu-2201725-29798199.jpg&fm=jpg",
     label: "Queue moving · Token 18",
   },
   {
     kicker: "04 / PAYMENT",
     title: "Finish with clarity.",
     text: "Quality, weighment and payment become part of one transparent journey, from the first tap to the final receipt.",
-    image: "/scroll-payment.svg",
+    image: "https://images.pexels.com/photos/16564262/pexels-photo-16564262.jpeg?cs=srgb&dl=pexels-theshantanukr-16564262.jpg&fm=jpg",
     label: "Payment processed",
   },
 ];
@@ -64,7 +64,6 @@ function ScrollExperience() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const [active, setActive] = useState(0);
-  const [hoverCycle, setHoverCycle] = useState(0);
 
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const nextScene = Math.min(scenes.length - 1, Math.floor(progress * scenes.length));
@@ -130,17 +129,15 @@ function ScrollExperience() {
               <motion.div
                 className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)]"
                 style={{ scale: imageScale, x: imageX, y: imageY }}
-                onMouseEnter={() => setHoverCycle((value) => value + 1)}
               >
                 <motion.img
-                  key={`${active}-${hoverCycle}`}
-                  src={hoverCycle % 2 === 0 ? scenes[active].image : scenes[(active + 1) % scenes.length].image}
+                  key={active}
+                  src={scenes[active].image}
                   alt=""
                   className="h-full w-full object-cover"
                   initial={{ opacity: 0, scale: 1.06 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.7 }}
-                  onMouseLeave={() => setHoverCycle((value) => value + 1)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
                 <motion.div className="absolute bottom-7 left-7 right-7" style={{ y: cardY, rotate: cardRotate }}>
@@ -151,9 +148,6 @@ function ScrollExperience() {
                 </motion.div>
               </motion.div>
 
-              <div className="absolute -right-1 top-2 hidden rounded-full border border-white/15 bg-white/10 px-4 py-2 font-mono text-[10px] tracking-[.16em] text-white/55 backdrop-blur-md sm:block">
-                HOVER IMAGE
-              </div>
               <div className="absolute bottom-2 left-0 flex gap-2">
                 {scenes.map((scene, index) => (
                   <button
