@@ -51,6 +51,15 @@ from app.schemas.booking import BookingOut
 from app.services.booking_service import (
     list_admin_bookings,
 )
+from app.schemas.payment import (
+    PaymentOut,
+    PaymentUpdate,
+)
+
+from app.services.payment_service import (
+    list_admin_payments,
+    update_admin_payment,
+)
 
 
 router = APIRouter(
@@ -193,4 +202,37 @@ def admin_bookings(
         centre_id,
         booking_date,
         booking_status,
+    )
+
+@router.get(
+    "/payments",
+    response_model=list[PaymentOut],
+)
+def admin_payments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return list_admin_payments(
+        db
+    )
+
+
+@router.put(
+    "/payments/{payment_id}",
+    response_model=PaymentOut,
+)
+def admin_update_payment(
+    payment_id: int,
+    payload: PaymentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return update_admin_payment(
+        db,
+        payment_id,
+        payload,
     )

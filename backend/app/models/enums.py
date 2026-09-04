@@ -28,4 +28,31 @@ class BookingStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
     CHECKED_IN = "CHECKED_IN"
     COMPLETED = "COMPLETED"
-    NO_SHOW = "NO_SHOW"    
+    NO_SHOW = "NO_SHOW"   
+    REJECTED = "REJECTED"
+
+class QueueStatus(str, enum.Enum):
+    WAITING = "WAITING"
+    CALLED = "CALLED"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    NO_SHOW = "NO_SHOW"     
+
+class ProcurementStage(str, enum.Enum):
+    DOCUMENT_VERIFICATION = "DOCUMENT_VERIFICATION"
+    QUALITY_CHECK = "QUALITY_CHECK"
+    WEIGHING = "WEIGHING"
+    DECISION = "DECISION"
+    COMPLETED = "COMPLETED"
+    REJECTED = "REJECTED"
+
+
+class ProcurementDecision(str, enum.Enum):
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"    
+
+class PaymentStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    PAID = "PAID"
+    FAILED = "FAILED"    

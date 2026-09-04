@@ -13,6 +13,9 @@ from app.models import (
     officer,
     slot,
     booking,
+    queue_entry,
+    procurement,
+    payment,
 )  # noqa: F401
 
 from app.routes import (
@@ -25,6 +28,9 @@ from app.routes import (
     officer,
     admin,
     booking,
+    queue,
+    procurements,
+    payments,
 )
 
 
@@ -78,6 +84,14 @@ app.include_router(booking.router)
 
 app.include_router(booking.router)
 
+#phase 5
+app.include_router(queue.router)
+
+#phase 6
+app.include_router(procurements.router)
+
+#phase 7
+app.include_router(payments.router)
 @app.get("/health")
 def health_check():
     return {
