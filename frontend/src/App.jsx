@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
@@ -36,8 +36,6 @@ const heroScenes = scenes.map((scene, index) => ({ ...scene, image: [
 
 function HeroCarousel() {
   const [active, setActive] = useState(0);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [loginType, setLoginType] = useState("farmer");
   const activeRef = useRef(0);
   const timerRef = useRef(null);
   const changeScene = (direction) => { const next = (activeRef.current + direction + heroScenes.length) % heroScenes.length; activeRef.current = next; setActive(next); };
@@ -63,7 +61,7 @@ function HeroCarousel() {
           <motion.p key={`hero-text-${active}`} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mt-6 max-w-xl text-base leading-7 text-white/72 sm:text-lg">{heroScenes[active].text}</motion.p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#story" className="inline-flex items-center justify-center gap-3 rounded-xl bg-[#176b3e] px-7 py-3.5 text-sm font-bold text-white">Get Started <ArrowRight size={18} /></a>
-            <button type="button" onClick={() => { setLoginType("farmer"); setLoginOpen(true); }} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm">Farmer Login <UserRound size={17} /></button>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("open-farmer-login"))} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm">Farmer Login <UserRound size={17} /></button>
             <span className="ml-2 font-mono text-[10px] tracking-[.2em] text-white/45">MOVE LEFT / RIGHT TO EXPLORE</span>
           </div>
           <div className="mt-10 flex items-center gap-3">{heroScenes.map((scene, index) => <button key={scene.kicker} type="button" onClick={() => { activeRef.current = index; setActive(index); }} className={`h-1.5 rounded-full transition-all duration-500 ${index === active ? "w-14 bg-white" : "w-7 bg-white/30"}`} />)}<span className="ml-3 font-mono text-[10px] tracking-[.2em] text-white/45">{String(active + 1).padStart(2, "0")} / 04</span></div>
@@ -71,49 +69,6 @@ function HeroCarousel() {
       </div>
       <div className="absolute bottom-7 right-6 z-30 hidden items-center gap-3 font-mono text-[10px] tracking-[.22em] text-white/40 lg:flex"><span className="h-px w-12 bg-white/20" /> KRISHISETU / JOURNEY</div>
 
-      {loginOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-md" onMouseDown={(event) => { if (event.target === event.currentTarget) setLoginOpen(false); }}>
-          <div className="w-full max-w-2xl rounded-3xl bg-white p-6 text-[#101510] shadow-2xl sm:p-8">
-            <div className="flex items-start justify-between gap-6">
-              <div>
-                <p className="font-mono text-[10px] font-semibold tracking-[.24em] text-[#7b847d]">KRISHISETU / ACCOUNT</p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-[-.04em]">Welcome back.</h2>
-                <p className="mt-2 text-sm text-[#69736b]">Choose how you want to continue.</p>
-              </div>
-              <button type="button" onClick={() => setLoginOpen(false)} className="text-2xl leading-none text-[#69736b]">×</button>
-            </div>
-
-            <div className="mt-7 grid gap-3 sm:grid-cols-2">
-              <button type="button" onClick={() => setLoginType("farmer")} className={`rounded-2xl border p-4 text-left transition ${loginType === "farmer" ? "border-[#176b3e] bg-[#edf8e9]" : "border-[#d9e1da] bg-white"}`}>
-                <p className="font-semibold">Farmer</p>
-                <p className="mt-1 text-xs text-[#69736b]">Farmer account</p>
-              </button>
-              <button type="button" onClick={() => setLoginType("officer")} className={`rounded-2xl border p-4 text-left transition ${loginType === "officer" ? "border-[#176b3e] bg-[#edf8e9]" : "border-[#d9e1da] bg-white"}`}>
-                <p className="font-semibold">Officer</p>
-                <p className="mt-1 text-xs text-[#69736b]">Centre / department</p>
-              </button>
-            </div>
-
-            <div className="mt-6">
-              <p className="font-semibold">{loginType === "farmer" ? "Farmer login" : "Officer login"}</p>
-              <p className="mt-1 text-sm text-[#69736b]">{loginType === "farmer" ? "Use your registered mobile number and password / PIN." : "Use your officer username / user ID and password / PIN."}</p>
-
-              <label className="mt-5 block text-sm font-semibold">{loginType === "farmer" ? "Mobile number" : "Username / User ID"}</label>
-              <input type={loginType === "farmer" ? "tel" : "text"} placeholder={loginType === "farmer" ? "+91 98765 43210" : "Enter officer user ID"} className="mt-2 h-12 w-full rounded-xl border border-[#d9e1da] bg-[#fbfcfa] px-4 outline-none focus:border-[#176b3e]" />
-
-              <label className="mt-4 block text-sm font-semibold">Password / PIN</label>
-              <input type="password" placeholder="Enter password or PIN" className="mt-2 h-12 w-full rounded-xl border border-[#d9e1da] bg-[#fbfcfa] px-4 outline-none focus:border-[#176b3e]" />
-
-              <button type="button" className="mt-5 h-12 w-full rounded-xl bg-[#176b3e] text-sm font-semibold text-white">Login as {loginType === "farmer" ? "Farmer" : "Officer"} <ArrowRight size={17} className="ml-2 inline" /></button>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between border-t border-[#e2e7e2] pt-5">
-              <div><p className="text-sm font-semibold">New to KrishiSetu?</p><p className="mt-1 text-xs text-[#69736b]">Create an account below.</p></div>
-              <button type="button" className="rounded-xl border border-[#b9cdbd] px-5 py-2.5 text-sm font-semibold text-[#176b3e]">Sign up</button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
@@ -143,7 +98,7 @@ function ScrollExperience() {
   const x = useTransform(
   scrollYProgress,
   [0, 1],
-  ["0vw", "-186vw"]
+  ["0vw", "-162vw"]
 );
 
   return (
@@ -163,7 +118,7 @@ function ScrollExperience() {
           {scenes.map((scene, index) => (
             <article
             key={scene.title || index}
-            className="relative h-[78vh] w-[58vw] shrink-0 overflow-hidden rounded-[28px]"
+            className="relative h-[72vh] w-[52vw] shrink-0 overflow-hidden rounded-[28px]"
             >
               {/* Background image */}
               <img
@@ -260,3 +215,4 @@ function App() {
 }
 
 export default App;
+
