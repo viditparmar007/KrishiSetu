@@ -215,6 +215,49 @@ function HeroCarousel() {
   );
 }
 
+function JourneyBridge() {
+  return (
+    <section className="relative overflow-hidden bg-[#050805] text-white">
+      <div className="relative mx-auto h-[72vh] min-h-[560px] max-h-[760px] w-full max-w-[1500px] overflow-hidden">
+        <motion.img
+          src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1800&q=88"
+          alt="Fresh produce ready for procurement"
+          className="absolute inset-0 h-full w-full object-cover"
+          initial={{ scale: 1.06 }}
+          whileInView={{ scale: 1 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/15" />
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#050805] to-transparent" />
+
+        <div className="absolute inset-x-0 bottom-12 px-6 sm:px-10 lg:px-16">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-4xl">
+              <p className="font-mono text-[10px] font-semibold tracking-[.28em] text-white/60">
+                THE JOURNEY / FROM FARM TO PAYMENT
+              </p>
+              <h2 className="mt-4 max-w-4xl text-[clamp(2.8rem,7vw,6.5rem)] font-semibold leading-[.9] tracking-[-.055em]">
+                Less uncertainty.
+                <br />
+                More control.
+              </h2>
+            </div>
+            <div className="max-w-xs pb-1 text-sm leading-6 text-white/65">
+              One connected experience for discovering a centre, planning a visit, tracking the queue and getting paid.
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute right-6 top-6 hidden items-center gap-3 font-mono text-[10px] tracking-[.2em] text-white/50 sm:flex lg:right-10 lg:top-8">
+          <span className="h-px w-10 bg-white/25" />
+          KRISHISETU / 01
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ScrollExperience() {
   const ref = useRef(null);
   const [active, setActive] = useState(0);
@@ -255,10 +298,7 @@ function ScrollExperience() {
       wheelDelta.current = 0;
 
       const current = activeRef.current;
-      const next = Math.max(
-        0,
-        Math.min(scenes.length - 1, current + direction)
-      );
+      const next = Math.max(0, Math.min(scenes.length - 1, current + direction));
 
       if (next === current) return;
 
@@ -272,8 +312,7 @@ function ScrollExperience() {
       const storyHeight = section.offsetHeight;
       const scrollRange = Math.max(0, storyHeight - window.innerHeight);
 
-      const targetTop =
-        storyTop + ((next + 0.5) / scenes.length) * scrollRange;
+      const targetTop = storyTop + ((next + 0.5) / scenes.length) * scrollRange;
 
       window.scrollTo({
         top: targetTop,
@@ -292,117 +331,54 @@ function ScrollExperience() {
     };
   }, []);
 
-  const imageScale = useTransform(
-    scrollYProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [1, 1.012, 1, 1.012, 1]
-  );
-
-  const cardY = useTransform(
-    scrollYProgress,
-    [0, 0.25, 0.5, 0.75, 1],
-    [8, -2, 6, -2, 8]
-  );
-
-  const cardRotate = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [-0.15, 0.15, -0.15]
-  );
+  const imageScale = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [1, 1.012, 1, 1.012, 1]);
+  const cardY = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [8, -2, 6, -2, 8]);
+  const cardRotate = useTransform(scrollYProgress, [0, 0.5, 1], [-0.15, 0.15, -0.15]);
 
   return (
-    <section
-      ref={ref}
-      id="story"
-      className="relative h-[400vh] bg-[#0b120d] text-white"
-    >
+    <section ref={ref} id="story" className="relative h-[400vh] bg-[#0b120d] text-white">
       <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_35%,rgba(90,168,91,.22),transparent_32%),radial-gradient(circle_at_15%_80%,rgba(22,107,62,.2),transparent_30%)]" />
-
           {scenes.map((scene, index) => (
             <img
               key={scene.kicker}
               src={scene.image}
               alt=""
               decoding="async"
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
-                index === active ? "opacity-[0.28]" : "opacity-0"
-              }`}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${index === active ? "opacity-[0.28]" : "opacity-0"}`}
             />
           ))}
-
           <div className="absolute inset-0 bg-[#071009]/75" />
         </div>
 
         <div className="relative z-10 mx-auto flex w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
           <div className="grid w-full items-center gap-10 lg:grid-cols-[.8fr_1.2fr]">
             <div className="max-w-xl">
-              <motion.p
-                key={`kicker-${active}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="font-mono text-xs font-semibold tracking-[.22em] text-[#a8d7ae]"
-              >
+              <motion.p key={`kicker-${active}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: "easeOut" }} className="font-mono text-xs font-semibold tracking-[.22em] text-[#a8d7ae]">
                 {scenes[active].kicker}
               </motion.p>
-
-              <motion.h2
-                key={`title-${active}`}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-5 max-w-2xl text-[clamp(3rem,7vw,6.6rem)] font-semibold leading-[.92] tracking-[-.055em]"
-              >
+              <motion.h2 key={`title-${active}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="mt-5 max-w-2xl text-[clamp(3rem,7vw,6.6rem)] font-semibold leading-[.92] tracking-[-.055em]">
                 {scenes[active].title}
               </motion.h2>
-
-              <motion.p
-                key={`text-${active}`}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.02 }}
-                className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg"
-              >
+              <motion.p key={`text-${active}`} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.02 }} className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg">
                 {scenes[active].text}
               </motion.p>
-
               <div className="mt-9 flex items-center gap-5">
                 <span className="font-mono text-xs text-white/45">SCROLL TO EXPLORE</span>
-                <motion.span
-                  animate={{ y: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-                  className="text-white/70"
-                >
+                <motion.span animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }} className="text-white/70">
                   <ArrowDownRight size={20} />
                 </motion.span>
               </div>
             </div>
 
             <div className="relative mx-auto h-[510px] w-full max-w-[720px]">
-              <motion.div
-                className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)] will-change-transform"
-                style={{ scale: imageScale }}
-              >
+              <motion.div className="absolute inset-6 overflow-hidden rounded-[2rem] border border-white/15 bg-black/20 shadow-[0_40px_100px_rgba(0,0,0,.4)] will-change-transform" style={{ scale: imageScale }}>
                 {scenes.map((scene, index) => (
-                  <img
-                    key={scene.kicker}
-                    src={scene.image}
-                    alt=""
-                    decoding="async"
-                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
-                      index === active ? "opacity-100" : "opacity-0"
-                    }`}
-                  />
+                  <img key={scene.kicker} src={scene.image} alt="" decoding="async" className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${index === active ? "opacity-100" : "opacity-0"}`} />
                 ))}
-
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10" />
-
-                <motion.div
-                  className="absolute bottom-7 left-7 right-7 will-change-transform"
-                  style={{ y: cardY, rotate: cardRotate }}
-                >
+                <motion.div className="absolute bottom-7 left-7 right-7 will-change-transform" style={{ y: cardY, rotate: cardRotate }}>
                   <div className="max-w-[340px] rounded-2xl border border-white/15 bg-black/55 p-5 backdrop-blur-xl">
                     <p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">Live state</p>
                     <p className="mt-2 text-lg font-medium">{scenes[active].label}</p>
@@ -419,27 +395,16 @@ function ScrollExperience() {
                     onClick={() => {
                       const section = ref.current;
                       if (!section) return;
-
                       const storyTop = section.getBoundingClientRect().top + window.scrollY;
                       const storyHeight = section.offsetHeight;
                       const scrollRange = Math.max(0, storyHeight - window.innerHeight);
-
                       activeRef.current = index;
                       setActive(index);
                       wheelLock.current = true;
-
-                      window.scrollTo({
-                        top: storyTop + ((index + 0.5) / scenes.length) * scrollRange,
-                        behavior: "smooth",
-                      });
-
-                      window.setTimeout(() => {
-                        wheelLock.current = false;
-                      }, 650);
+                      window.scrollTo({ top: storyTop + ((index + 0.5) / scenes.length) * scrollRange, behavior: "smooth" });
+                      window.setTimeout(() => { wheelLock.current = false; }, 650);
                     }}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      index === active ? "w-12 bg-white" : "w-5 bg-white/25 hover:bg-white/50"
-                    }`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${index === active ? "w-12 bg-white" : "w-5 bg-white/25 hover:bg-white/50"}`}
                   />
                 ))}
               </div>
@@ -450,7 +415,6 @@ function ScrollExperience() {
         <div className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/35">
           KRISHISETU / {String(active + 1).padStart(2, "0")}
         </div>
-
         <div className="absolute right-5 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex">
           <span className="h-16 w-px bg-white/15" />
           <span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">JOURNEY</span>
@@ -466,6 +430,8 @@ function App() {
     <PublicLayout>
       <main>
         <HeroCarousel />
+        <JourneyBridge />
+        <ScrollExperience />
 
         <section id="how-it-works" className="border-t border-[#edf0ed] bg-white py-14 sm:py-16">
           <div className="mx-auto w-full max-w-6xl px-6 sm:px-8 lg:px-10">
@@ -475,18 +441,10 @@ function App() {
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {steps.map(([title, text, Icon], index) => (
-                <motion.div
-                  whileHover={{ y: -7 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 22 }}
-                  key={title}
-                  className="relative flex min-h-[176px] flex-col rounded-2xl border border-[#e2e9e3] bg-white p-6 shadow-[0_6px_25px_rgba(20,60,35,.04)]"
-                >
+                <motion.div whileHover={{ y: -7 }} transition={{ type: "spring", stiffness: 300, damping: 22 }} key={title} className="relative flex min-h-[176px] flex-col rounded-2xl border border-[#e2e9e3] bg-white p-6 shadow-[0_6px_25px_rgba(20,60,35,.04)]">
                   <div className="flex items-start gap-4">
                     <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#176b3e] text-white"><Icon size={28} /></span>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#141a15]">{title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-[#68736b]">{text}</p>
-                    </div>
+                    <div><h3 className="text-lg font-bold text-[#141a15]">{title}</h3><p className="mt-2 text-sm leading-6 text-[#68736b]">{text}</p></div>
                   </div>
                   <a href="#story" className="mt-auto pt-4 text-sm font-bold text-[#276f40]">Explore <ArrowRight size={15} className="ml-1 inline" /></a>
                   {index < 2 && <span className="pointer-events-none absolute -right-8 top-1/2 hidden text-3xl text-[#9bc8a2] md:block">→</span>}
