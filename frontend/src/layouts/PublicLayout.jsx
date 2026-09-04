@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, LockKeyhole, Phone, UserRound, X } from "lucide-react";
 import Navbar from "../components/public/Navbar";
 
@@ -8,10 +8,18 @@ function PublicLayout({ children }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const openLogin = () => {
-    setError("");
-    setLoginOpen(true);
-  };
+  useEffect(() => {
+    const handleFarmerLoginClick = (event) => {
+      const button = event.target.closest("button");
+      if (!button || !button.textContent?.includes("Farmer Login")) return;
+      event.preventDefault();
+      setError("");
+      setLoginOpen(true);
+    };
+
+    document.addEventListener("click", handleFarmerLoginClick);
+    return () => document.removeEventListener("click", handleFarmerLoginClick);
+  }, []);
 
   const closeLogin = () => {
     setLoginOpen(false);
@@ -42,13 +50,6 @@ function PublicLayout({ children }) {
     <div className="min-h-screen bg-[#F7F8F3] text-[#17251B]">
       <Navbar />
       <main>{children}</main>
-
-      <button
-        type="button"
-        aria-label="Open farmer login"
-        onClick={openLogin}
-        className="fixed bottom-5 right-5 z-40 hidden"
-      />
 
       {loginOpen && (
         <div
