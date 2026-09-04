@@ -9,16 +9,13 @@ function PublicLayout({ children }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const handleFarmerLoginClick = (event) => {
-      const button = event.target.closest("button");
-      if (!button || !button.textContent?.includes("Farmer Login")) return;
-      event.preventDefault();
+    const handleFarmerLogin = () => {
       setError("");
       setLoginOpen(true);
     };
 
-    document.addEventListener("click", handleFarmerLoginClick);
-    return () => document.removeEventListener("click", handleFarmerLoginClick);
+    window.addEventListener("open-farmer-login", handleFarmerLogin);
+    return () => window.removeEventListener("open-farmer-login", handleFarmerLogin);
   }, []);
 
   const closeLogin = () => {
@@ -87,21 +84,13 @@ function PublicLayout({ children }) {
 
             <form onSubmit={handleLogin} className="mt-8 space-y-5">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#202b23]">
-                  Mobile number
-                </span>
+                <span className="mb-2 block text-sm font-semibold text-[#202b23]">Mobile number</span>
                 <div className="flex items-center rounded-xl border border-[#dce3dc] bg-[#fafcf9] px-4 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10">
                   <Phone size={18} className="text-[#718078]" />
-                  <span className="ml-3 border-r border-[#dce3dc] pr-3 text-sm text-[#68736b]">
-                    +91
-                  </span>
+                  <span className="ml-3 border-r border-[#dce3dc] pr-3 text-sm text-[#68736b]">+91</span>
                   <input
                     value={mobile}
-                    onChange={(event) =>
-                      setMobile(
-                        event.target.value.replace(/\D/g, "").slice(0, 10),
-                      )
-                    }
+                    onChange={(event) => setMobile(event.target.value.replace(/\D/g, "").slice(0, 10))}
                     inputMode="numeric"
                     autoComplete="tel"
                     placeholder="98765 43210"
@@ -111,9 +100,7 @@ function PublicLayout({ children }) {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-[#202b23]">
-                  Password / PIN
-                </span>
+                <span className="mb-2 block text-sm font-semibold text-[#202b23]">Password / PIN</span>
                 <div className="flex items-center rounded-xl border border-[#dce3dc] bg-[#fafcf9] px-4 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10">
                   <LockKeyhole size={18} className="text-[#718078]" />
                   <input
@@ -127,9 +114,7 @@ function PublicLayout({ children }) {
                 </div>
               </label>
 
-              {error && (
-                <p className="text-sm font-medium text-red-600">{error}</p>
-              )}
+              {error && <p className="text-sm font-medium text-red-600">{error}</p>}
 
               <button
                 type="submit"
