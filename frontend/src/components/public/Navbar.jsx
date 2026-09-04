@@ -28,13 +28,12 @@ function Navbar() {
           >
             Farmer Login
           </button>
-          <button
-            type="button"
-            onClick={openFarmerLogin}
+          <a
+            href="#story"
             className="inline-flex items-center justify-center rounded-2xl bg-[#176b3e] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#115832]"
           >
             Get Started
-          </button>
+          </a>
         </div>
       </nav>
     </header>
