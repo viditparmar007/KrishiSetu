@@ -66,6 +66,7 @@ function PublicLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#F7F8F3] text-[#17251B]">
+      <style>{`#home .mt-8.flex.flex-wrap.items-center.gap-3 { position: relative; z-index: 40; }`}</style>
       <Navbar />
       <main>{children}</main>
       {loginOpen && (
