@@ -16,6 +16,9 @@ from app.models import (
     queue_entry,
     procurement,
     payment,
+    notification,
+    audit_log,
+    recommendations,
 )  # noqa: F401
 
 from app.routes import (
@@ -31,6 +34,7 @@ from app.routes import (
     queue,
     procurements,
     payments,
+    notifications,
 )
 
 
@@ -99,3 +103,8 @@ def health_check():
         "service": "KrishiSetu backend",
     }
 
+# phase 8
+app.include_router(notifications.router)
+
+#phase 9
+app.include_router(recommendations.router)

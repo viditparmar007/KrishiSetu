@@ -14,6 +14,9 @@ from app.services.booking_service import get_my_booking
 from app.services.centre_service import get_centre_or_404
 from app.services.farmer_service import get_farmer_for_user
 from app.services.officer_service import get_officer_for_user
+from app.models.enums import NotificationType
+from app.services.notification_service import create_notification
+
 
 CHECKIN_EARLY_MINUTES = 60
 CHECKIN_GRACE_MINUTES = 30
@@ -305,7 +308,6 @@ def complete_queue_entry(db: Session, current_user: User, queue_entry_id: int):
     db.refresh(entry)
     return entry
 
-
 def mark_queue_no_show(db: Session, current_user: User, queue_entry_id: int):
     entry = get_queue_entry_for_officer(db, current_user, queue_entry_id)
     if entry.status not in {QueueStatus.WAITING, QueueStatus.CALLED}:
@@ -316,3 +318,14 @@ def mark_queue_no_show(db: Session, current_user: User, queue_entry_id: int):
     db.commit()
     db.refresh(entry)
     return entry
+    create_notification(
+    db=db,
+    user_id=next_entry.booking.farmer.user_id,
+    notification_type=NotificationType.QUEUE,
+    title="Your token has been called",
+    message=f"Token {next_entry.booking.token} is now being served.",
+    entity_type="booking",
+    entity_id=next_entry.booking_id,
+)
+
+

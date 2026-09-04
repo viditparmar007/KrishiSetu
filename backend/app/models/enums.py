@@ -56,3 +56,19 @@ class PaymentStatus(str, enum.Enum):
     PROCESSING = "PROCESSING"
     PAID = "PAID"
     FAILED = "FAILED"    
+
+
+class NotificationType(str, enum.Enum):
+    BOOKING = "BOOKING"
+    QUEUE = "QUEUE"
+    PROCUREMENT = "PROCUREMENT"
+    PAYMENT = "PAYMENT"
+    SYSTEM = "SYSTEM"
+
+ 
+class AuditAction(str, enum.Enum):
+    CREATE = "CREATE"
+    UPDATE = "UPDATE"
+    DELETE = "DELETE"
+    STATUS_CHANGE = "STATUS_CHANGE"
+    LOGIN = "LOGIN"

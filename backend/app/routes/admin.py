@@ -236,3 +236,75 @@ def admin_update_payment(
         payment_id,
         payload,
     )
+
+from app.schemas.audit import AuditLogOut
+from app.services.audit_service import list_audit_logs
+@router.get(
+    "/audit-logs",
+    response_model=list[AuditLogOut],
+)
+def admin_audit_logs(
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return list_audit_logs(
+        db,
+        limit,
+    )
+
+from app.schemas.analytics import (
+    AdminOverviewOut,
+    CentrePerformanceOut,
+    DailyTrendOut,
+)
+
+from app.services.analytics_service import (
+    admin_overview,
+    centre_performance,
+    daily_trend,
+)
+
+@router.get(
+    "/analytics/overview",
+    response_model=AdminOverviewOut,
+)
+def admin_analytics_overview(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return admin_overview(db)
+
+
+@router.get(
+    "/analytics/centres",
+    response_model=list[CentrePerformanceOut],
+)
+def admin_centre_performance(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return centre_performance(db)
+
+
+@router.get(
+    "/analytics/trend",
+    response_model=list[DailyTrendOut],
+)
+def admin_daily_trend(
+    days: int = 7,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("ADMIN")
+    ),
+):
+    return daily_trend(
+        db,
+        days,
+    )

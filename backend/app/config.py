@@ -1,16 +1,15 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    jwt_secret_key: str = "local-development-secret-change-me"
-    jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 1440
-    database_url: str = "sqlite:///./krishisetu.db"
+    database_url: str
+    jwt_secret_key: str
     frontend_origin: str = "http://localhost:5173"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
 
 
 settings = Settings()

@@ -15,6 +15,8 @@ from app.schemas.procurement import (
 )
 from app.services.farmer_service import get_farmer_for_user
 from app.services.officer_service import get_officer_for_user
+from app.models.enums import NotificationType
+from app.services.notification_service import create_notification
 
 
 def get_procurement_for_officer(db: Session, current_user: User, procurement_id: int):
@@ -181,3 +183,25 @@ def get_my_procurement(db: Session, current_user: User, procurement_id: int):
     if not item:
         raise HTTPException(status_code=404, detail="Procurement not found")
     return item
+    create_notification(
+    db=db,
+    user_id=item.booking.farmer.user_id,
+    notification_type=NotificationType.PROCUREMENT,
+    title="Procurement approved",
+    message=f"Your procurement was approved for ₹{item.total_value:.2f}",
+    entity_type="procurement",
+    entity_id=item.id,
+)
+
+    create_notification(
+    db=db,
+    user_id=item.booking.farmer.user_id,
+    notification_type=NotificationType.PROCUREMENT,
+    title="Procurement rejected",
+    message=item.rejection_reason or "Your procurement was rejected.",
+    entity_type="procurement",
+    entity_id=item.id,
+)
+
+
+

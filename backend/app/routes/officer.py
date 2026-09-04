@@ -410,3 +410,21 @@ def officer_update_payment(
         payment_id,
         payload,
     )
+
+from app.schemas.analytics import OfficerAnalyticsOut
+from app.services.analytics_service import officer_analytics
+
+@router.get(
+    "/analytics/summary",
+    response_model=OfficerAnalyticsOut,
+)
+def officer_analytics_summary(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role("OFFICER")
+    ),
+):
+    return officer_analytics(
+        db,
+        current_user,
+    )

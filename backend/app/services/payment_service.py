@@ -11,6 +11,11 @@ from app.schemas.payment import PaymentUpdate
 from app.services.farmer_service import get_farmer_for_user
 from app.services.officer_service import get_officer_for_user
 
+from app.models.enums import NotificationType
+from app.services.notification_service import create_notification
+
+
+
 
 def generate_payment_reference() -> str:
     return "KSPAY-" + datetime.utcnow().strftime("%Y%m%d") + "-" + token_hex(4).upper()
@@ -120,3 +125,12 @@ def update_admin_payment(db: Session, payment_id: int, payload: PaymentUpdate):
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
     return update_payment(db, payment, payload)
+    create_notification(
+    db=db,
+    user_id=payment.procurement.booking.farmer.user_id,
+    notification_type=NotificationType.PAYMENT,
+    title="Payment completed",
+    message=f"Payment of ₹{payment.amount:.2f} has been marked PAID.",
+    entity_type="payment",
+    entity_id=payment.id,
+)
