@@ -75,3 +75,25 @@ def require_role(*allowed_roles: str):
         return current_user
 
     return role_checker
+
+def require_role(*allowed_roles: str):
+
+    def role_checker(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+
+        role_value = (
+            current_user.role.value
+            if hasattr(current_user.role, "value")
+            else str(current_user.role)
+        )
+
+        if role_value not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action",
+            )
+
+        return current_user
+
+    return role_checker

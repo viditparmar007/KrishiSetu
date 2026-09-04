@@ -5,7 +5,7 @@ class UserRole(str, enum.Enum):
     FARMER = "FARMER"
     OFFICER = "OFFICER"
     ADMIN = "ADMIN"
-    
+
 class CropStatus(str, enum.Enum):
     PLANNED = "PLANNED"
     GROWING = "GROWING"
@@ -13,3 +13,12 @@ class CropStatus(str, enum.Enum):
     HARVESTED = "HARVESTED"
     PROCURED = "PROCURED"    
 
+class CentreStatus(str, enum.Enum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+
+
+class SlotStatus(str, enum.Enum):
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+    CANCELLED = "CANCELLED"

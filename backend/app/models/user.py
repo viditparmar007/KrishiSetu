@@ -21,3 +21,8 @@ class User(Base):
     )
 
     farmer_profile = relationship("Farmer", back_populates="user", uselist=False)
+    officer_profile = relationship(
+    "Officer",
+    back_populates="user",
+    uselist=False,
+)
