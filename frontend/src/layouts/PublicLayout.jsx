@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Building2,
-  LockKeyhole,
-  Phone,
-  UserRound,
-  UserPlus,
-  X,
-} from "lucide-react";
+import { ArrowRight, Building2, LockKeyhole, Phone, UserRound, UserPlus, X } from "lucide-react";
 import Navbar from "../components/public/Navbar";
 
 function PublicLayout({ children }) {
@@ -26,16 +18,8 @@ function PublicLayout({ children }) {
     const openFarmerLogin = () => {
       setRole("farmer"); setSignupOpen(false); setError(""); setLoginOpen(true);
     };
-    const handleDocumentClick = (event) => {
-      const button = event.target.closest("button");
-      if (button && button.textContent.trim().startsWith("Farmer Login")) openFarmerLogin();
-    };
     window.addEventListener("open-farmer-login", openFarmerLogin);
-    document.addEventListener("click", handleDocumentClick);
-    return () => {
-      window.removeEventListener("open-farmer-login", openFarmerLogin);
-      document.removeEventListener("click", handleDocumentClick);
-    };
+    return () => window.removeEventListener("open-farmer-login", openFarmerLogin);
   }, []);
 
   const closeAuth = () => { setLoginOpen(false); setSignupOpen(false); setError(""); };
@@ -66,7 +50,6 @@ function PublicLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-[#F7F8F3] text-[#17251B]">
-      <style>{`#home .mt-8.flex.flex-wrap.items-center.gap-3 { position: relative; z-index: 40; }`}</style>
       <Navbar />
       <main>{children}</main>
       {loginOpen && (
