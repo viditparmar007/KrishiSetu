@@ -8,24 +8,6 @@ if (-not (Test-Path $dashboard)) { throw "FarmerDashboard.jsx not found at $dash
 $content = Get-Content $dashboard -Raw -Encoding UTF8
 
 # 1) Wire sidebar navigation without changing the existing layout.
-$navMap = @{
-  'Dashboard' = 'Dashboard'
-  'My Farms' = 'My Farms'
-  'My Crops' = 'My Crops'
-  'Find Centre' = 'Find Centre'
-  'My Bookings' = 'My Bookings'
-  'Live Queue' = 'Live Queue'
-  'Procurement' = 'Procurement'
-  'Payments' = 'Payments'
-  'Notifications' = 'Notifications'
-  'Advisory' = 'Advisory'
-  'Schemes' = 'Schemes'
-  'Profile' = 'Profile'
-}
-foreach ($label in $navMap.Keys) {
-  $old = "<NavItem icon="
-}
-
 $content = $content.Replace('<NavItem icon={House} label="Dashboard" active />', '<NavItem icon={House} label="Dashboard" active onClick={() => handleNav("Dashboard")} />')
 $content = $content.Replace('<NavItem icon={Tractor} label="My Farms" />', '<NavItem icon={Tractor} label="My Farms" onClick={() => handleNav("My Farms")} />')
 $content = $content.Replace('<NavItem icon={Wheat} label="My Crops" />', '<NavItem icon={Wheat} label="My Crops" onClick={() => handleNav("My Crops")} />')
@@ -33,14 +15,18 @@ $content = $content.Replace('<NavItem icon={MapPin} label="Find Centre" />', '<N
 $content = $content.Replace('<NavItem icon={CalendarDays} label="My Bookings" />', '<NavItem icon={CalendarDays} label="My Bookings" onClick={() => handleNav("My Bookings")} />')
 $content = $content.Replace('<NavItem icon={Users} label="Live Queue" />', '<NavItem icon={Users} label="Live Queue" onClick={() => handleNav("Live Queue")} />')
 $content = $content.Replace('<NavItem icon={FileText} label="Procurement" />', '<NavItem icon={FileText} label="Procurement" onClick={() => handleNav("Procurement")} />')
-$content = $content.Replace('<NavItem icon={IndianRupeeIcon} label="Payments" />', '<NavItem icon={IndianRupeeIcon} label="Payments" onClick={() => handleNav("Payments")} />')
+$content = $content.Replace('<NavItem icon={FileText} label="Payments" />', '<NavItem icon={FileText} label="Payments" onClick={() => handleNav("Payments")} />')
 $content = $content.Replace('<NavItem icon={Bell} label="Notifications" badge="3" />', '<NavItem icon={Bell} label="Notifications" badge="3" onClick={() => handleNav("Notifications")} />')
 $content = $content.Replace('<NavItem icon={Sprout} label="Advisory" />', '<NavItem icon={Sprout} label="Advisory" onClick={() => handleNav("Advisory")} />')
 $content = $content.Replace('<NavItem icon={FileText} label="Schemes" />', '<NavItem icon={FileText} label="Schemes" onClick={() => handleNav("Schemes")} />')
 $content = $content.Replace('<NavItem icon={UserRound} label="Profile" />', '<NavItem icon={UserRound} label="Profile" onClick={() => handleNav("Profile")} />')
 
 # 2) Add action state/handler before the dashboard return.
-$marker = '  const upcoming = data?.upcoming_harvests || [];\n\n  return ('
+$marker = @'
+  const upcoming = data?.upcoming_harvests || [];
+
+  return (
+'@
 $insert = @'
   const upcoming = data?.upcoming_harvests || [];
 
@@ -80,21 +66,20 @@ if (-not $content.Contains($marker)) { throw "Dashboard insertion marker not fou
 $content = $content.Replace($marker, $insert)
 
 # 3) Give the existing dashboard sections stable scroll targets.
-$content = $content.Replace('<div className="mt-6 grid gap-5 xl:grid-cols-[1.05fr_1fr_190px]">', '<div id="my-farms" className="mt-6 scroll-mt-24 grid gap-5 xl:grid-cols-[1.05fr_1fr_190px]">')
-$content = $content.Replace('<button type="button" onClick={() => window.alert("Procurement centre discovery will be connected to the centre module next.")}', '<button type="button" onClick={() => handleNav("Find Centre") }')
+$content = $content.Replace('<div className="mt-6 grid gap-5 xl:grid-cols-[1.05fr_1fr_.9fr]">', '<div id="my-farms" className="mt-6 scroll-mt-24 grid gap-5 xl:grid-cols-[1.05fr_1fr_.9fr]">')
 
-# 4) Make quick actions perform the same real dashboard interaction instead of alerts.
+# 4) Make quick actions perform the same dashboard interaction instead of alerts.
 $content = $content.Replace('<QuickAction icon={CalendarDays} label="Book a Slot" />', '<QuickAction icon={CalendarDays} label="Book a Slot" onClick={() => handleNav("Find Centre")} />')
 $content = $content.Replace('<QuickAction icon={FileText} label="View Bookings" />', '<QuickAction icon={FileText} label="View Bookings" onClick={() => handleNav("My Bookings")} />')
 $content = $content.Replace('<QuickAction icon={Users} label="Check Queue" />', '<QuickAction icon={Users} label="Check Queue" onClick={() => handleNav("Live Queue")} />')
-$content = $content.Replace('<QuickAction icon={RupeeIcon} label="Payment Status" />', '<QuickAction icon={RupeeIcon} label="Payment Status" onClick={() => handleNav("Payments")} />')
+$content = $content.Replace('<QuickAction icon={IndianRupeeIcon} label="Payment Status" />', '<QuickAction icon={IndianRupeeIcon} label="Payment Status" onClick={() => handleNav("Payments")} />')
 
 # 5) Government schemes button and top notification become functional.
 $content = $content.Replace('<button type="button" className="hidden items-center gap-2 rounded-lg border border-[#9db9a4] px-4 py-2.5 text-xs font-bold text-[#176b3e] sm:inline-flex">Explore Schemes', '<button type="button" onClick={() => handleNav("Schemes")} className="hidden items-center gap-2 rounded-lg border border-[#9db9a4] px-4 py-2.5 text-xs font-bold text-[#176b3e] sm:inline-flex">Explore Schemes')
 $content = $content.Replace('<button type="button" className="relative rounded-full p-2.5 text-[#33453a] hover:bg-[#f1f5f1]"><Bell', '<button type="button" onClick={() => handleNav("Notifications")} className="relative rounded-full p-2.5 text-[#33453a] hover:bg-[#f1f5f1]"><Bell')
 $content = $content.Replace('<button type="button" className="hidden items-center gap-3 sm:flex">', '<button type="button" onClick={() => handleNav("Profile")} className="hidden items-center gap-3 sm:flex">')
 
-# 6) Replace QuickAction with a reusable real click target.
+# 6) Replace QuickAction with a reusable click target.
 $oldQuick = @'
 function QuickAction({ icon: Icon, label }) {
   return <button type="button" onClick={() => window.alert(`${label} will be connected to the next dashboard module.`)} className="flex items-center gap-2 rounded-xl border border-[#e1e8e2] bg-[#fbfdfb] px-3 py-3 text-left text-xs font-semibold transition hover:border-[#9dbba3] hover:bg-[#f3f8f3]"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e9f5ea] text-[#176b3e]"><Icon size={16}/></span>{label}</button>;
@@ -109,8 +94,16 @@ if (-not $content.Contains($oldQuick)) { throw "QuickAction definition not found
 $content = $content.Replace($oldQuick, $newQuick)
 
 # 7) Let NavItem receive the click handler.
-$oldNav = 'function NavItem({ icon: Icon, label, active, badge }) {\n  return <button type="button" className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${active ? "bg-[#eaf5ec] font-bold text-[#176b3e]" : "text-[#33453a] hover:bg-[#f3f7f3]"}`}><Icon size={19} /> <span className="flex-1 text-left">{label}</span>{badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9363e] px-1 text-[10px] font-bold text-white">{badge}</span>}</button>;\n}'
-$newNav = 'function NavItem({ icon: Icon, label, active, badge, onClick }) {\n  return <button type="button" onClick={onClick} className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${active ? "bg-[#eaf5ec] font-bold text-[#176b3e]" : "text-[#33453a] hover:bg-[#f3f7f3]"}`}><Icon size={19} /> <span className="flex-1 text-left">{label}</span>{badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9363e] px-1 text-[10px] font-bold text-white">{badge}</span>}</button>;\n}'
+$oldNav = @'
+function NavItem({ icon: Icon, label, active, badge }) {
+  return <button type="button" className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${active ? "bg-[#eaf5ec] font-bold text-[#176b3e]" : "text-[#33453a] hover:bg-[#f3f7f3]"}`}><Icon size={19} /> <span className="flex-1 text-left">{label}</span>{badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9363e] px-1 text-[10px] font-bold text-white">{badge}</span>}</button>;
+}
+'@
+$newNav = @'
+function NavItem({ icon: Icon, label, active, badge, onClick }) {
+  return <button type="button" onClick={onClick} className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${active ? "bg-[#eaf5ec] font-bold text-[#176b3e]" : "text-[#33453a] hover:bg-[#f3f7f3]"}`}><Icon size={19} /> <span className="flex-1 text-left">{label}</span>{badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9363e] px-1 text-[10px] font-bold text-white">{badge}</span>}</button>;
+}
+'@
 if (-not $content.Contains($oldNav)) { throw "NavItem definition not found." }
 $content = $content.Replace($oldNav, $newNav)
 
