@@ -24,7 +24,7 @@ import heroImage from "../assets/hero-photo.png";
 import farmImage from "../assets/farm-photo.png";
 import cropCardImage from "../assets/crop-photo.png";
 import centreImage from "../assets/centre-photo.png";
-import supportImage from "../assets/help-photo.png";
+import supportImage from "../assets/help-photo.png";`r`nimport FarmerSectionPage from "./FarmerSectionPage";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function formatDate(value) {
@@ -46,7 +46,7 @@ function FarmerDashboard({ onLogout }) {
   const [crops, setCrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [modal, setModal] = useState(null);
+  const [modal, setModal] = useState(null);`r`n  const [sectionPage, setSectionPage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [farmForm, setFarmForm] = useState({ farm_name: "", state: "", district: "", village: "", area: "", area_unit: "acre", irrigation_type: "" });
@@ -207,10 +207,10 @@ const [heroMessage] = useState(
             </div>
           </div>
           <nav className="space-y-1 px-3">
-             <NavItem icon={House} label="Dashboard" active onClick={() => window.alert("You are already on the Dashboard.")} />
-             <NavItem icon={Tractor} label="My Farms" onClick={() => window.alert("My Farms section is ready.")} />
-             <NavItem icon={Wheat} label="My Crops" onClick={() => window.alert("My Crops section is ready.")} />
-             <NavItem icon={MapPin} label="Find Centre" onClick={() => window.alert("Find Centre section is ready.")} />
+             <NavItem icon={House} label="Dashboard" active onClick={() => setSectionPage(null)} />
+             <NavItem icon={Tractor} label="My Farms" onClick={() => setSectionPage("My Farms")} />
+             <NavItem icon={Wheat} label="My Crops" onClick={() => setSectionPage("My Crops")} />
+             <NavItem icon={MapPin} label="Find Centre" onClick={() => setSectionPage("Find Centre")} />
             <NavItem icon={CalendarDays} label="My Bookings" onClick={() => handleNav("My Bookings")} />
             <NavItem icon={Users} label="Live Queue" onClick={() => handleNav("Live Queue")} />
             <NavItem icon={FileText} label="Procurement" onClick={() => handleNav("Procurement")} />
@@ -283,11 +283,11 @@ const [heroMessage] = useState(
               </div>
 
               <div className="mt-6 grid gap-5 xl:grid-cols-[1.05fr_1fr_190px]">
-                <Panel title="My Farms" subtitle="Manage your farm land and details" icon={Leaf} action={<button type="button" onClick={openFarmModal} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832]"><Plus size={16}/> Add Farm</button>}>
+                <Panel title="My Farms" subtitle="Manage your farm land and details" icon={Leaf} onClick={() => setSectionPage("My Farms")} action={<button type="button" onClick={(event) => { event.stopPropagation(); openFarmModal(); }} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832]"><Plus size={16}/> Add Farm</button>}>
                   {farms.length ? farms.map((farm) => <FarmCard key={farm.id} farm={farm} onAddCrop={() => openCropModal(farm.id)} />) : <EmptyState text="No farms added yet." action="Add farm" onAction={openFarmModal} />}
                 </Panel>
 
-                <Panel title="My Crops" subtitle="Track what you are growing" icon={Leaf} action={<button type="button" onClick={() => farms.length && openCropModal()} disabled={!farms.length} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832] disabled:opacity-40"><Plus size={16}/> Add Crop</button>}>
+                <Panel title="My Crops" subtitle="Track what you are growing" icon={Leaf} onClick={() => setSectionPage("My Crops")} action={<button type="button" onClick={(event) => { event.stopPropagation(); farms.length && openCropModal(); }} disabled={!farms.length} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832] disabled:opacity-40"><Plus size={16}/> Add Crop</button>}>
                   {crops.length ? crops.map((crop) => <CropRow key={crop.id} crop={crop} farmName={farms.find((farm) => farm.id === crop.farm_id)?.farm_name} />) : <EmptyState text="No crops added yet" sub="Start by adding crops to your farm." action={farms.length ? "Add your first crop" : undefined} onAction={farms.length ? () => openCropModal() : undefined} />}
                 </Panel>
 
@@ -302,7 +302,7 @@ const [heroMessage] = useState(
                   {upcoming.length ? upcoming.slice(0, 3).map((crop) => <div key={crop.id} className="flex items-center justify-between rounded-xl border border-[#e3e9e3] bg-[#fbfdfb] p-4"><div><p className="font-bold">{crop.crop_name}</p><p className="mt-1 text-xs text-[#718078]">{crop.farm_name}</p></div><div className="text-right"><p className="text-xs font-semibold text-[#176b3e]">{formatDate(crop.expected_harvest_date)}</p></div></div>) : <EmptyState text="No upcoming harvests yet" sub="Add crops with expected harvest dates to see them here." action={farms.length ? "Add Crop" : undefined} onAction={farms.length ? () => openCropModal() : undefined} />}
                 </Panel>
 
-                <button type="button" onClick={() => window.alert("Procurement centre discovery will be connected to the centre module next.")} className="group overflow-hidden rounded-2xl border border-[#d8e4da] bg-white text-left transition hover:border-[#176b3e]">
+                <button type="button" onClick={() => setSectionPage("Find Centre")} className="group overflow-hidden rounded-2xl border border-[#d8e4da] bg-white text-left transition hover:border-[#176b3e]">
                   <div className="relative h-full min-h-[230px] overflow-hidden bg-[#e7f3e6] p-5"><img src={centreImage} alt="" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-transparent" /><div className="relative z-10"><p className="font-mono text-[10px] tracking-[.18em] text-[#7a847c]">NEXT STEP</p><p className="mt-2 text-xl font-extrabold">Find a procurement centre</p><p className="mt-2 max-w-xs text-sm leading-5 text-[#65736a]">Discover nearby centres, check available slots and book your visit.</p><span className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white">Explore Centres <ChevronRight size={15}/></span></div><MapPin className="absolute bottom-6 right-7 text-[#176b3e]/30" size={78}/></div>
                 </button>
 
@@ -332,8 +332,8 @@ function Metric({ icon: Icon, label, value, sub, tone = "green" }) {
   return <div className="group flex min-h-[116px] items-center justify-between rounded-2xl border border-[#dfe7df] bg-white p-5 shadow-[0_3px_14px_rgba(26,52,34,.025)]"><div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}><Icon size={24}/></div><div className="ml-4 flex-1"><p className="text-3xl font-extrabold tracking-[-.05em] text-[#111a14]">{value ?? 0}</p><p className="font-medium text-[#26362b]">{label}</p><p className="mt-1 text-xs text-[#718078]">{sub}</p></div><ChevronRight size={20} className="text-[#526158] transition group-hover:translate-x-0.5"/></div>;
 }
 
-function Panel({ title, subtitle, icon: Icon, action, children }) {
-  return <section className="rounded-2xl border border-[#dfe7df] bg-white p-5 shadow-[0_3px_14px_rgba(26,52,34,.025)]"><div className="flex items-start justify-between gap-3"><div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9f5ea] text-[#176b3e]"><Icon size={21}/></div><div><h2 className="text-lg font-extrabold tracking-[-.025em]">{title}</h2><p className="text-xs text-[#718078]">{subtitle}</p></div></div>{action}</div><div className="mt-5">{children}</div></section>;
+function Panel({ title, subtitle, icon: Icon, action, children, onClick }) {
+  return <section onClick={onClick} className={`rounded-2xl border border-[#dfe7df] bg-white p-5 shadow-[0_3px_14px_rgba(26,52,34,.025)] ${onClick ? "cursor-pointer transition hover:border-[#9dbba3] hover:shadow-md" : ""}`}><div className="flex items-start justify-between gap-3"><div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9f5ea] text-[#176b3e]"><Icon size={21}/></div><div><h2 className="text-lg font-extrabold tracking-[-.025em]">{title}</h2><p className="text-xs text-[#718078]">{subtitle}</p></div></div>{action}</div><div className="mt-5">{children}</div></section>;
 }
 
 function FarmCard({ farm, onAddCrop }) {
@@ -368,6 +368,7 @@ function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, 
 function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
 
 export default FarmerDashboard;
+
 
 
 
