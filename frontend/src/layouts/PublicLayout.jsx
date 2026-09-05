@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 function PublicLayout({ children }) {
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
-  const [dashboardOpen, setDashboardOpen] = useState(() => Boolean(localStorage.getItem("krishisetu_access_token")));
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [role, setRole] = useState("farmer");
   const [mobile, setMobile] = useState("");
   const [officerId, setOfficerId] = useState("");
