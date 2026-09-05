@@ -24,7 +24,8 @@ import heroImage from "../assets/hero-photo.png";
 import farmImage from "../assets/farm-photo.png";
 import cropCardImage from "../assets/crop-photo.png";
 import centreImage from "../assets/centre-photo.png";
-import supportImage from "../assets/help-photo.png";`r`nimport FarmerSectionPage from "./FarmerSectionPage";
+import supportImage from "../assets/help-photo.png";
+import FarmerSectionPage from "./FarmerSectionPage";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function formatDate(value) {
@@ -46,7 +47,8 @@ function FarmerDashboard({ onLogout }) {
   const [crops, setCrops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [modal, setModal] = useState(null);`r`n  const [sectionPage, setSectionPage] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [sectionPage, setSectionPage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [farmForm, setFarmForm] = useState({ farm_name: "", state: "", district: "", village: "", area: "", area_unit: "acre", irrigation_type: "" });
@@ -368,6 +370,7 @@ function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, 
 function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
 
 export default FarmerDashboard;
+
 
 
 
