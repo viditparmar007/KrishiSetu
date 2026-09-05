@@ -18,6 +18,7 @@ from app.models import (
     payment,
     notification,
     audit_log,
+    
    
 )  # noqa: F401
 
@@ -36,6 +37,7 @@ from app.routes import (
     payments,
     notifications,
     recommendations,
+    providers,
 )
 
 
@@ -109,3 +111,8 @@ app.include_router(notifications.router)
 
 #phase 9
 app.include_router(recommendations.router)
+
+#phase 11
+
+app.include_router(providers.router)
+app.include_router(providers.admin_router)
