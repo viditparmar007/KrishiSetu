@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   CalendarDays,
@@ -20,8 +20,11 @@ import {
   Wheat,
   X,
 } from "lucide-react";
-import heroImage from "../assets/hero-photo.png";`r`nimport farmImage from "../assets/farm-photo.png";`r`nimport cropCardImage from "../assets/crop-photo.png";`r`nimport centreImage from "../assets/centre-photo.png";`r`nimport supportImage from "../assets/help-photo.png";
-
+import heroImage from "../assets/hero-photo.png";
+import farmImage from "../assets/farm-photo.png";
+import cropCardImage from "../assets/crop-photo.png";
+import centreImage from "../assets/centre-photo.png";
+import supportImage from "../assets/help-photo.png";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function formatDate(value) {
@@ -150,6 +153,17 @@ function FarmerDashboard({ onLogout }) {
   };
 
   const firstName = (data?.farmer_name || "Farmer").split(" ")[0];
+  const heroMessages = [
+  "Manage your farms, track your crops, and move towards a better tomorrow.",
+  "Grow smarter, plan better, and make every acre count.",
+  "Stay on top of your crops and take the next step with confidence.",
+  "Your farm, your progress, your opportunities, all in one place.",
+  "Better planning today, stronger farming tomorrow.",
+];
+
+const [heroMessage] = useState(
+  () => heroMessages[Math.floor(Math.random() * heroMessages.length)]
+);
   const upcoming = data?.upcoming_harvests || [];
 
   return (
@@ -182,7 +196,7 @@ function FarmerDashboard({ onLogout }) {
               <p className="mt-1 text-xs text-[#526158]">Call our support</p>
               <p className="mt-1 text-lg font-extrabold text-[#176b3e]">1800-123-4567</p>
               <img src={supportImage} alt="" className="mt-4 h-16 w-full rounded-xl object-cover" />
-              <p className="mt-3 text-sm font-bold text-[#176b3e]">Kisan ka Saathi ðŸŒ¿</p>
+              <p className="mt-3 text-sm font-bold text-[#176b3e]">Kisan ka Saathi </p>
               <p className="text-xs font-semibold text-[#526158]">Har Kadam Par</p>
             </div>
           </div>
@@ -214,13 +228,15 @@ function FarmerDashboard({ onLogout }) {
               <div className="relative flex min-h-[210px] items-center justify-between gap-6 px-7 py-8 sm:px-9">
                 <div className="max-w-xl text-white">
                   <p className="text-sm font-semibold text-white/80">Good Morning,</p>
-                  <h1 className="mt-1 text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">{data?.farmer_name || "Farmer"} <span>ðŸŒ¿</span></h1>
-                  <p className="mt-3 max-w-md text-sm leading-6 text-white/85">Manage your farms, track your crops, and move towards a better tomorrow.</p>
-                  <div className="mt-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur">â€œBetter farming today, a stronger tomorrow.â€</div>
+                  <h1 className="mt-1 text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">
+                    {data?.farmer_name || "Farmer"} <span aria-hidden="true">&#x1F60A;</span>
+                  </h1>
+                  <p className="mt-3 max-w-md text-sm leading-6 text-white/85">{heroMessage}</p>
+                  <div className="mt-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur">Better farming today, a stronger tomorrow.👍</div>
                 </div>
                 <div className="hidden w-[220px] shrink-0 rounded-2xl border border-white/30 bg-white/90 p-4 text-[#24372b] shadow-xl md:block">
-                  <div className="flex items-center gap-3"><span className="text-3xl">â˜€ï¸</span><div><p className="text-2xl font-extrabold">31Â°C</p><p className="text-xs text-[#536158]">Saharanpur, U.P.</p></div></div>
-                  <div className="mt-4 rounded-xl bg-[#eaf6eb] px-3 py-3 text-xs font-semibold text-[#176b3e]">ðŸŒ± Good weather for field activities today!</div>
+                  <div className="flex items-center gap-3"><span className="text-3xl">☀️</span><div><p className="text-2xl font-extrabold">31°C</p><p className="text-xs text-[#536158]">Saharanpur, U.P.</p></div></div>
+                  <div className="mt-4 rounded-xl bg-[#eaf6eb] px-3 py-3 text-xs font-semibold text-[#176b3e]">🌱 Good weather for field activities today!</div>
                 </div>
               </div>
             </div>
@@ -322,4 +338,6 @@ function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, 
 function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
 
 export default FarmerDashboard;
+
+
 
