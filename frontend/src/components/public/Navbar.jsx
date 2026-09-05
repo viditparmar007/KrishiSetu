@@ -3,6 +3,11 @@ function Navbar() {
     window.dispatchEvent(new CustomEvent("open-farmer-login"));
   };
 
+  const openStory = (event) => {
+    event.preventDefault();
+    document.getElementById("story")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <header className="border-b border-[#e3e9e4] bg-white/95 backdrop-blur">
       <nav className="mx-auto flex min-h-[74px] w-full max-w-7xl items-center justify-between gap-6 px-6 sm:px-8 lg:px-10" aria-label="Main navigation">
@@ -28,7 +33,11 @@ function Navbar() {
           >
             Farmer Login
           </button>
-          <a href="#story" className="inline-flex items-center justify-center rounded-2xl bg-[#176b3e] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#115832]">
+          <a
+            href="#story"
+            onClick={openStory}
+            className="inline-flex items-center justify-center rounded-2xl bg-[#176b3e] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#115832]"
+          >
             Get Started
           </a>
         </div>

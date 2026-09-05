@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
   ArrowDownRight, ArrowRight, CalendarDays, ChartNoAxesCombined,
@@ -54,20 +54,21 @@ function HeroCarousel() {
       </div>
       <div className="absolute inset-y-0 left-0 z-20 hidden w-[32%] lg:block" onMouseEnter={() => changeScene(-1)} aria-hidden="true" />
       <div className="absolute inset-y-0 right-0 z-20 hidden w-[32%] lg:block" onMouseEnter={() => changeScene(1)} aria-hidden="true" />
-      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-7xl items-end px-6 pb-14 pt-28 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
+      <div className="relative z-30 mx-auto flex min-h-[calc(100vh-76px)] w-full max-w-7xl items-end px-6 pb-14 pt-28 sm:px-8 sm:pb-16 lg:px-10 lg:pb-20">
         <div className="w-full max-w-4xl">
           <p className="font-mono text-xs font-semibold tracking-[.24em] text-white/70">{heroScenes[active].kicker}</p>
           <motion.h1 key={`hero-title-${active}`} initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="mt-4 max-w-4xl text-[clamp(3.2rem,8vw,7rem)] font-semibold leading-[.9] tracking-[-.055em]">{heroScenes[active].title}</motion.h1>
           <motion.p key={`hero-text-${active}`} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mt-6 max-w-xl text-base leading-7 text-white/72 sm:text-lg">{heroScenes[active].text}</motion.p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#story" className="inline-flex items-center justify-center gap-3 rounded-xl bg-[#176b3e] px-7 py-3.5 text-sm font-bold text-white">Get Started <ArrowRight size={18} /></a>
-            <button type="button" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm">Farmer Login <UserRound size={17} /></button>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("open-farmer-login"))} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/35 bg-white/10 px-7 py-3.5 text-sm font-bold text-white backdrop-blur-sm">Farmer Login <UserRound size={17} /></button>
             <span className="ml-2 font-mono text-[10px] tracking-[.2em] text-white/45">MOVE LEFT / RIGHT TO EXPLORE</span>
           </div>
           <div className="mt-10 flex items-center gap-3">{heroScenes.map((scene, index) => <button key={scene.kicker} type="button" onClick={() => { activeRef.current = index; setActive(index); }} className={`h-1.5 rounded-full transition-all duration-500 ${index === active ? "w-14 bg-white" : "w-7 bg-white/30"}`} />)}<span className="ml-3 font-mono text-[10px] tracking-[.2em] text-white/45">{String(active + 1).padStart(2, "0")} / 04</span></div>
         </div>
       </div>
       <div className="absolute bottom-7 right-6 z-30 hidden items-center gap-3 font-mono text-[10px] tracking-[.22em] text-white/40 lg:flex"><span className="h-px w-12 bg-white/20" /> KRISHISETU / JOURNEY</div>
+
     </section>
   );
 }
@@ -86,30 +87,124 @@ function GroundedContent() {
 }
 
 function ScrollExperience() {
-  const ref = useRef(null);
-  const [active, setActive] = useState(0);
-  const activeRef = useRef(0);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  useEffect(() => scrollYProgress.on("change", (value) => { const next = Math.min(scenes.length - 1, Math.max(0, Math.floor(value * scenes.length))); if (next !== activeRef.current) { activeRef.current = next; setActive(next); } }), [scrollYProgress]);
-  const imageScale = useTransform(scrollYProgress, [0, .25, .5, .75, 1], [1, 1.02, 1, 1.02, 1]);
-  const imageX = useTransform(scrollYProgress, [0, .25, .5, .75, 1], [0, -8, 0, -8, 0]);
+  const activeRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: activeRef,
+    offset: ["start start", "end end"],
+  });
+
+  // 4 cards = 0%, -100%, -200%, -300%
+  const x = useTransform(
+  scrollYProgress,
+  [0, 1],
+  ["0vw", "-162vw"]
+);
+
   return (
-    <section ref={ref} id="story" className="relative h-[400vh] bg-[#071009] text-white">
-      <div className="sticky top-0 h-screen min-h-[680px] overflow-hidden">
-        <div className="absolute inset-0 bg-[#071009]" />
-        <div className="relative z-10 mx-auto flex h-full w-full max-w-7xl items-center px-6 sm:px-8 lg:px-10">
-          <div className="grid w-full items-center gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
-            <div className="max-w-xl">
-              <p className="font-mono text-xs font-semibold tracking-[.24em] text-[#a8d7ae]">{scenes[active].kicker}</p>
-              <motion.h2 key={`story-title-${active}`} initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65 }} className="mt-5 max-w-xl text-[clamp(3rem,6.5vw,6.4rem)] font-semibold leading-[.9] tracking-[-.055em]">{scenes[active].title}</motion.h2>
-              <motion.p key={`story-text-${active}`} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mt-7 max-w-lg text-base leading-7 text-white/70 sm:text-lg">{scenes[active].text}</motion.p>
-              <div className="mt-10 flex items-center gap-4"><span className="font-mono text-[10px] tracking-[.22em] text-white/45">SCROLL TO EXPLORE</span><ArrowDownRight size={19} className="text-white/65" /></div>
-            </div>
-            <div className="relative h-[430px] w-full sm:h-[510px]"><motion.div className="absolute inset-0 overflow-hidden rounded-[2rem] border border-white/15 shadow-[0_40px_100px_rgba(0,0,0,.45)]" style={{ scale: imageScale, x: imageX }}>{scenes.map((scene,index)=><motion.img key={scene.kicker} src={scene.image} alt="" className="absolute inset-0 h-full w-full object-cover" initial={false} animate={{ opacity:index===active?1:0 }} transition={{duration:.55}} />)}<div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" /><div className="absolute bottom-7 left-7"><div className="rounded-2xl border border-white/15 bg-[#071009]/80 px-5 py-4 backdrop-blur-xl"><p className="font-mono text-[10px] uppercase tracking-[.2em] text-white/45">Live state</p><p className="mt-2 text-lg font-medium">{scenes[active].label}</p></div></div></motion.div><div className="absolute -bottom-10 left-0 flex items-center gap-2">{scenes.map((scene,index)=><span key={scene.kicker} className={`h-1.5 rounded-full transition-all duration-500 ${index===active?"w-12 bg-white":"w-5 bg-white/25"}`} />)}<span className="ml-3 font-mono text-[10px] tracking-[.2em] text-white/40">{String(active+1).padStart(2,"0")} / 04</span></div></div>
-          </div>
+    <section
+      ref={activeRef}
+      id="story"
+      className="relative h-[400vh] bg-[#071009] text-white"
+    >
+      {/* Sticky viewport */}
+      <div className="sticky top-0 h-screen overflow-hidden">
+
+        {/* Horizontal card track */}
+        <motion.div
+        style={{ x }}
+        className="flex h-full items-center gap-[4vw] px-[2vw]"
+       >
+          {scenes.map((scene, index) => (
+            <article
+            key={scene.title || index}
+            className="relative h-[72vh] w-[52vw] shrink-0 overflow-hidden rounded-[28px]"
+            >
+              {/* Background image */}
+              <img
+                src={scene.image}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+
+              {/* Dark overlay */}
+              <div className="absolute inset-0 bg-black/40" />
+
+              {/* Bottom gradient */}
+              <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+              {/* Card content */}
+              <div className="relative z-10 flex h-full w-full items-end">
+                <div className="w-full px-8 pb-16 sm:px-16 sm:pb-20 lg:px-20 lg:pb-24">
+
+                  <div className="max-w-3xl">
+                    <p className="mb-5 font-mono text-xs font-semibold uppercase tracking-[0.28em] text-[#a8d7ae]">
+                      {String(index + 1).padStart(2, "0")} /{" "}
+                      {scene.label || scene.eyebrow || "DISCOVER"}
+                    </p>
+
+                    <motion.h2
+                      key={`title-${index}`}
+                      className="text-5xl font-semibold leading-[0.95] tracking-[-0.04em] sm:text-6xl lg:text-8xl"
+                    >
+                      {scene.title}
+                    </motion.h2>
+
+                    <p className="mt-6 max-w-2xl text-base leading-7 text-white/75 sm:text-lg">
+                      {scene.text || scene.description}
+                    </p>
+
+                    {(scene.cta || scene.action) && (
+                      <div className="mt-7 inline-flex rounded-full border border-white/30 bg-black/30 px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                        {scene.cta || scene.action}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+
+              {/* Card number */}
+              <div className="absolute right-8 top-8 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-white/10 font-mono text-xs backdrop-blur-sm">
+                {String(index + 1).padStart(2, "0")}
+              </div>
+            </article>
+          ))}
+        </motion.div>
+
+        {/* Progress */}
+        <div className="absolute bottom-7 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3">
+          {scenes.map((_, index) => {
+            const start = index / scenes.length;
+            const end = (index + 1) / scenes.length;
+
+            return (
+              <motion.div
+                key={index}
+                className="h-1.5 w-16 overflow-hidden rounded-full bg-white/20"
+              >
+                <motion.div
+                  className="h-full origin-left rounded-full bg-white"
+                  style={{
+                    scaleX: useTransform(
+                      scrollYProgress,
+                      [start, end],
+                      [0, 1]
+                    ),
+                  }}
+                />
+              </motion.div>
+            );
+          })}
         </div>
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-[.28em] text-white/30">KRISHISETU / JOURNEY</div>
-        <div className="absolute right-5 top-1/2 hidden -translate-y-1/2 lg:block"><span className="font-mono text-[10px] tracking-[.2em] text-white/40 [writing-mode:vertical-rl]">JOURNEY</span></div>
+
+        {/* Vertical journey indicator */}
+        <div className="absolute right-6 top-1/2 z-30 hidden -translate-y-1/2 rotate-90 lg:block">
+          <span className="font-mono text-[9px] uppercase tracking-[0.45em] text-white/40">
+            Scroll journey
+          </span>
+        </div>
+
       </div>
     </section>
   );
@@ -120,3 +215,4 @@ function App() {
 }
 
 export default App;
+
