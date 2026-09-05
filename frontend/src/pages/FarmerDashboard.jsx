@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+﻿import { useCallback, useEffect, useState } from "react";
 import {
   Bell,
   CalendarDays,
@@ -20,7 +20,7 @@ import {
   Wheat,
   X,
 } from "lucide-react";
-import heroImage from "../assets/hero.png";
+import heroImage from "../assets/hero-photo.png";`r`nimport farmImage from "../assets/farm-photo.png";`r`nimport cropCardImage from "../assets/crop-photo.png";`r`nimport centreImage from "../assets/centre-photo.png";`r`nimport supportImage from "../assets/help-photo.png";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -181,8 +181,8 @@ function FarmerDashboard({ onLogout }) {
               <p className="text-sm font-bold text-[#176b3e]">Need Help?</p>
               <p className="mt-1 text-xs text-[#526158]">Call our support</p>
               <p className="mt-1 text-lg font-extrabold text-[#176b3e]">1800-123-4567</p>
-              <div className="mt-4 h-16 rounded-xl bg-gradient-to-b from-[#dff1df] to-[#b8d9b4]" />
-              <p className="mt-3 text-sm font-bold text-[#176b3e]">Kisan ka Saathi 🌿</p>
+              <img src={supportImage} alt="" className="mt-4 h-16 w-full rounded-xl object-cover" />
+              <p className="mt-3 text-sm font-bold text-[#176b3e]">Kisan ka Saathi ðŸŒ¿</p>
               <p className="text-xs font-semibold text-[#526158]">Har Kadam Par</p>
             </div>
           </div>
@@ -214,13 +214,13 @@ function FarmerDashboard({ onLogout }) {
               <div className="relative flex min-h-[210px] items-center justify-between gap-6 px-7 py-8 sm:px-9">
                 <div className="max-w-xl text-white">
                   <p className="text-sm font-semibold text-white/80">Good Morning,</p>
-                  <h1 className="mt-1 text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">{data?.farmer_name || "Farmer"} <span>🌿</span></h1>
+                  <h1 className="mt-1 text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">{data?.farmer_name || "Farmer"} <span>ðŸŒ¿</span></h1>
                   <p className="mt-3 max-w-md text-sm leading-6 text-white/85">Manage your farms, track your crops, and move towards a better tomorrow.</p>
-                  <div className="mt-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur">“Better farming today, a stronger tomorrow.”</div>
+                  <div className="mt-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur">â€œBetter farming today, a stronger tomorrow.â€</div>
                 </div>
                 <div className="hidden w-[220px] shrink-0 rounded-2xl border border-white/30 bg-white/90 p-4 text-[#24372b] shadow-xl md:block">
-                  <div className="flex items-center gap-3"><span className="text-3xl">☀️</span><div><p className="text-2xl font-extrabold">31°C</p><p className="text-xs text-[#536158]">Saharanpur, U.P.</p></div></div>
-                  <div className="mt-4 rounded-xl bg-[#eaf6eb] px-3 py-3 text-xs font-semibold text-[#176b3e]">🌱 Good weather for field activities today!</div>
+                  <div className="flex items-center gap-3"><span className="text-3xl">â˜€ï¸</span><div><p className="text-2xl font-extrabold">31Â°C</p><p className="text-xs text-[#536158]">Saharanpur, U.P.</p></div></div>
+                  <div className="mt-4 rounded-xl bg-[#eaf6eb] px-3 py-3 text-xs font-semibold text-[#176b3e]">ðŸŒ± Good weather for field activities today!</div>
                 </div>
               </div>
             </div>
@@ -246,8 +246,8 @@ function FarmerDashboard({ onLogout }) {
                 </Panel>
 
                 <div className="hidden overflow-hidden rounded-2xl border border-[#e1e8e2] bg-gradient-to-b from-[#edf8dd] to-[#f8fcf4] xl:block">
-                  <div className="h-[170px] bg-gradient-to-b from-[#d7efcf] to-[#eff8e9] p-5 text-center"><Sprout size={48} className="mx-auto mt-6 text-[#4f9a3b]" /></div>
-                  <div className="p-5"><p className="text-xl font-extrabold leading-tight text-[#176b3e]">Healthy Crops<br/>Brighter Futures</p><p className="mt-2 text-center text-xs text-[#536158]">Track · Plan · Prosper</p></div>
+                  <div className="relative h-[170px] overflow-hidden bg-[#eaf4e5] p-5 text-center"><img src={cropCardImage} alt="" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#dff0d7]/55 via-transparent to-transparent" /></div>
+                  <div className="p-5"><p className="text-xl font-extrabold leading-tight text-[#176b3e]">Healthy Crops<br/>Brighter Futures</p><p className="mt-2 text-center text-xs text-[#536158]">Track Â· Plan Â· Prosper</p></div>
                 </div>
               </div>
 
@@ -257,7 +257,7 @@ function FarmerDashboard({ onLogout }) {
                 </Panel>
 
                 <button type="button" onClick={() => window.alert("Procurement centre discovery will be connected to the centre module next.")} className="group overflow-hidden rounded-2xl border border-[#d8e4da] bg-white text-left transition hover:border-[#176b3e]">
-                  <div className="relative h-full min-h-[230px] bg-gradient-to-br from-[#e7f3e6] via-white to-[#d8ead6] p-5"><div className="relative z-10"><p className="font-mono text-[10px] tracking-[.18em] text-[#7a847c]">NEXT STEP</p><p className="mt-2 text-xl font-extrabold">Find a procurement centre</p><p className="mt-2 max-w-xs text-sm leading-5 text-[#65736a]">Discover nearby centres, check available slots and book your visit.</p><span className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white">Explore Centres <ChevronRight size={15}/></span></div><MapPin className="absolute bottom-6 right-7 text-[#176b3e]/30" size={78}/></div>
+                  <div className="relative h-full min-h-[230px] overflow-hidden bg-[#e7f3e6] p-5"><img src={centreImage} alt="" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-transparent" /><div className="relative z-10"><p className="font-mono text-[10px] tracking-[.18em] text-[#7a847c]">NEXT STEP</p><p className="mt-2 text-xl font-extrabold">Find a procurement centre</p><p className="mt-2 max-w-xs text-sm leading-5 text-[#65736a]">Discover nearby centres, check available slots and book your visit.</p><span className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white">Explore Centres <ChevronRight size={15}/></span></div><MapPin className="absolute bottom-6 right-7 text-[#176b3e]/30" size={78}/></div>
                 </button>
 
                 <Panel title="Quick Actions" subtitle="Common tasks" icon={Sprout}>
@@ -291,11 +291,11 @@ function Panel({ title, subtitle, icon: Icon, action, children }) {
 }
 
 function FarmCard({ farm, onAddCrop }) {
-  return <div className="group rounded-xl border border-[#cfe0d2] bg-[#fbfdfb] p-4 transition hover:border-[#72a980]"><div className="flex items-center gap-4"><div className="hidden h-[86px] w-[110px] shrink-0 rounded-lg bg-gradient-to-br from-[#9fd18e] via-[#d7e9c6] to-[#7eaf72] sm:block" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{farm.farm_name}</p><p className="mt-1 flex items-center gap-1 text-xs text-[#718078]"><MapPin size={13}/>{farm.village}, {farm.district}, {farm.state}</p><p className="mt-2 text-xs font-medium text-[#536158]">{farm.area} {farm.area_unit} · {farm.irrigation_type || "Irrigation not set"}</p></div><ChevronRight size={20} className="text-[#176b3e]"/></div><button type="button" onClick={onAddCrop} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#bfd2c3] bg-white px-3 py-2 text-xs font-semibold text-[#176b3e] hover:bg-[#edf7ef]"><Plus size={14}/> Add crop</button></div></div></div>;
+  return <div className="group rounded-xl border border-[#cfe0d2] bg-[#fbfdfb] p-4 transition hover:border-[#72a980]"><div className="flex items-center gap-4"><img src={farmImage} alt="" className="hidden h-[86px] w-[110px] shrink-0 rounded-lg object-cover sm:block" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{farm.farm_name}</p><p className="mt-1 flex items-center gap-1 text-xs text-[#718078]"><MapPin size={13}/>{farm.village}, {farm.district}, {farm.state}</p><p className="mt-2 text-xs font-medium text-[#536158]">{farm.area} {farm.area_unit} Â· {farm.irrigation_type || "Irrigation not set"}</p></div><ChevronRight size={20} className="text-[#176b3e]"/></div><button type="button" onClick={onAddCrop} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#bfd2c3] bg-white px-3 py-2 text-xs font-semibold text-[#176b3e] hover:bg-[#edf7ef]"><Plus size={14}/> Add crop</button></div></div></div>;
 }
 
 function CropRow({ crop, farmName }) {
-  return <div className="flex items-center justify-between rounded-xl border border-[#e3e9e3] bg-[#fbfdfb] p-4"><div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e9f6ea] text-[#176b3e]"><Sprout size={21}/></div><div className="min-w-0"><p className="truncate font-bold">{crop.crop_name}</p><p className="mt-1 truncate text-xs text-[#718078]">{farmName || "Farm"}{crop.season ? ` · ${crop.season}` : ""}</p></div></div><span className="rounded-full bg-[#e8f5ea] px-2.5 py-1 text-[10px] font-bold text-[#176b3e]">{statusLabel(crop.status)}</span></div>;
+  return <div className="flex items-center justify-between rounded-xl border border-[#e3e9e3] bg-[#fbfdfb] p-4"><div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e9f6ea] text-[#176b3e]"><Sprout size={21}/></div><div className="min-w-0"><p className="truncate font-bold">{crop.crop_name}</p><p className="mt-1 truncate text-xs text-[#718078]">{farmName || "Farm"}{crop.season ? ` Â· ${crop.season}` : ""}</p></div></div><span className="rounded-full bg-[#e8f5ea] px-2.5 py-1 text-[10px] font-bold text-[#176b3e]">{statusLabel(crop.status)}</span></div>;
 }
 
 function EmptyState({ text, sub, action, onAction }) {
@@ -318,7 +318,8 @@ function Modal({ title, onClose, children }) {
   return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#132017]/45 p-4 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-7"><div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-bold tracking-[-.03em]">{title}</h2><button type="button" onClick={onClose} className="rounded-lg p-2 text-[#718078] hover:bg-[#f2f5f2]"><X size={19}/></button></div>{children}</div></div>;
 }
 
-function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 700 }}>₹</span>; }
-function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>₹</span>; }
+function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 700 }}>â‚¹</span>; }
+function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
 
 export default FarmerDashboard;
+
