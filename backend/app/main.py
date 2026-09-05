@@ -38,6 +38,7 @@ from app.routes import (
     notifications,
     recommendations,
     providers,
+    simulator,
 )
 
 
@@ -116,3 +117,6 @@ app.include_router(recommendations.router)
 
 app.include_router(providers.router)
 app.include_router(providers.admin_router)
+
+#phase 12
+app.include_router(simulator.router)
