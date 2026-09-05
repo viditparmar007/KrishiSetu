@@ -197,6 +197,16 @@ const [heroMessage] = useState(
     }
     setModal(`info:${label}`);
   };
+  if (sectionPage) {
+  return (
+    <FarmerSectionPage
+      section={sectionPage}
+      farms={farms}
+      crops={crops}
+      onBack={() => setSectionPage(null)}
+    />
+  );
+}
 
   return (
     <main className="min-h-screen bg-[#f4f7f2] text-[#17251b]">
@@ -370,6 +380,7 @@ function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, 
 function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
 
 export default FarmerDashboard;
+
 
 
 
