@@ -1,18 +1,21 @@
-﻿import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
   CalendarDays,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  Clock3,
+  CircleAlert,
+  CloudSun,
   FileText,
   House,
+  IndianRupee,
   Leaf,
   LogOut,
   MapPin,
   Plus,
   Search,
+  Settings,
   Sprout,
   Tractor,
   UserRound,
@@ -24,8 +27,8 @@ import heroImage from "../assets/hero-photo.png";
 import farmImage from "../assets/farm-photo.png";
 import cropCardImage from "../assets/crop-photo.png";
 import centreImage from "../assets/centre-photo.png";
-import supportImage from "../assets/help-photo.png";
 import FarmerSectionPage from "./FarmerSectionPage";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function formatDate(value) {
@@ -38,7 +41,41 @@ function formatDate(value) {
 }
 
 function statusLabel(status) {
-  return String(status || "").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  return String(status || "")
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function NavItem({ icon: Icon, label, active, badge, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[14px] font-medium transition ${
+        active
+          ? "bg-[#dff3e7] text-[#12633a] shadow-[inset_0_0_0_1px_rgba(30,125,75,.08)]"
+          : "text-[#405149] hover:bg-white/70 hover:text-[#12633a]"
+      }`}
+    >
+      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-white/75" : "bg-white/55"}`}>
+        <Icon size={19} strokeWidth={1.9} />
+      </span>
+      <span className="flex-1">{label}</span>
+      {badge && <span className="rounded-full bg-[#e94d52] px-1.5 py-0.5 text-[9px] font-bold text-white">{badge}</span>}
+    </button>
+  );
+}
+
+function GlassCard({ children, className = "", ...props }) {
+  return (
+    <section
+      className={`rounded-[24px] border border-white/80 bg-white/72 shadow-[0_18px_50px_rgba(44,83,60,.07)] backdrop-blur-xl ${className}`}
+      {...props}
+    >
+      {children}
+    </section>
+  );
 }
 
 function FarmerDashboard({ onLogout }) {
@@ -51,17 +88,36 @@ function FarmerDashboard({ onLogout }) {
   const [sectionPage, setSectionPage] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-  const [farmForm, setFarmForm] = useState({ farm_name: "", state: "", district: "", village: "", area: "", area_unit: "acre", irrigation_type: "" });
-  const [cropForm, setCropForm] = useState({ farm_id: "", crop_name: "", season: "", sowing_date: "", expected_harvest_date: "", expected_quantity: "", quantity_unit: "quintal", status: "GROWING" });
+  const [mapMode, setMapMode] = useState("3D View");
+  const [farmForm, setFarmForm] = useState({
+    farm_name: "",
+    state: "",
+    district: "",
+    village: "",
+    area: "",
+    area_unit: "acre",
+    irrigation_type: "",
+  });
+  const [cropForm, setCropForm] = useState({
+    farm_id: "",
+    crop_name: "",
+    season: "",
+    sowing_date: "",
+    expected_harvest_date: "",
+    expected_quantity: "",
+    quantity_unit: "quintal",
+    status: "GROWING",
+  });
 
   const token = localStorage.getItem("krishisetu_access_token");
-  const authHeaders = { Authorization: `Bearer ${token}` };
+  const authHeaders = useMemo(() => ({ Authorization: `Bearer ${token}` }), [token]);
 
   const loadData = useCallback(async () => {
     if (!token) {
       onLogout?.();
       return;
     }
+
     try {
       setLoading(true);
       setError("");
@@ -70,14 +126,24 @@ function FarmerDashboard({ onLogout }) {
         fetch(`${API_URL}/api/v1/farms`, { headers: authHeaders }),
         fetch(`${API_URL}/api/v1/crops`, { headers: authHeaders }),
       ]);
+
       if ([dashboardResponse, farmsResponse, cropsResponse].some((response) => response.status === 401)) {
         localStorage.removeItem("krishisetu_access_token");
         localStorage.removeItem("krishisetu_role");
         onLogout?.();
         return;
       }
-      if (!dashboardResponse.ok || !farmsResponse.ok || !cropsResponse.ok) throw new Error("Unable to load your farmer data right now.");
-      const [dashboard, farmsData, cropsData] = await Promise.all([dashboardResponse.json(), farmsResponse.json(), cropsResponse.json()]);
+
+      if (!dashboardResponse.ok || !farmsResponse.ok || !cropsResponse.ok) {
+        throw new Error("Unable to load your farmer data right now.");
+      }
+
+      const [dashboard, farmsData, cropsData] = await Promise.all([
+        dashboardResponse.json(),
+        farmsResponse.json(),
+        cropsResponse.json(),
+      ]);
+
       setData(dashboard);
       setFarms(farmsData);
       setCrops(cropsData);
@@ -86,9 +152,11 @@ function FarmerDashboard({ onLogout }) {
     } finally {
       setLoading(false);
     }
-  }, [token, onLogout]);
+  }, [authHeaders, onLogout, token]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const logout = () => {
     localStorage.removeItem("krishisetu_access_token");
@@ -98,29 +166,57 @@ function FarmerDashboard({ onLogout }) {
 
   const openFarmModal = () => {
     setFormError("");
-    setFarmForm({ farm_name: "", state: "", district: "", village: "", area: "", area_unit: "acre", irrigation_type: "" });
+    setFarmForm({
+      farm_name: "",
+      state: "",
+      district: "",
+      village: "",
+      area: "",
+      area_unit: "acre",
+      irrigation_type: "",
+    });
     setModal("farm");
   };
 
   const openCropModal = (farmId = farms[0]?.id || "") => {
     setFormError("");
-    setCropForm({ farm_id: String(farmId), crop_name: "", season: "", sowing_date: "", expected_harvest_date: "", expected_quantity: "", quantity_unit: "quintal", status: "GROWING" });
+    setCropForm({
+      farm_id: String(farmId),
+      crop_name: "",
+      season: "",
+      sowing_date: "",
+      expected_harvest_date: "",
+      expected_quantity: "",
+      quantity_unit: "quintal",
+      status: "GROWING",
+    });
     setModal("crop");
   };
 
   const saveFarm = async (event) => {
     event.preventDefault();
     setFormError("");
-    if (!farmForm.farm_name.trim() || !farmForm.state.trim() || !farmForm.district.trim() || !farmForm.village.trim() || Number(farmForm.area) <= 0) {
+    if (
+      !farmForm.farm_name.trim() ||
+      !farmForm.state.trim() ||
+      !farmForm.district.trim() ||
+      !farmForm.village.trim() ||
+      Number(farmForm.area) <= 0
+    ) {
       setFormError("Please fill all required farm details.");
       return;
     }
+
     try {
       setSaving(true);
       const response = await fetch(`${API_URL}/api/v1/farms`, {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ ...farmForm, area: Number(farmForm.area), irrigation_type: farmForm.irrigation_type || null }),
+        body: JSON.stringify({
+          ...farmForm,
+          area: Number(farmForm.area),
+          irrigation_type: farmForm.irrigation_type || null,
+        }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || "Could not add farm.");
@@ -128,7 +224,9 @@ function FarmerDashboard({ onLogout }) {
       await loadData();
     } catch (requestError) {
       setFormError(requestError.message || "Could not add farm.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveCrop = async (event) => {
@@ -138,12 +236,21 @@ function FarmerDashboard({ onLogout }) {
       setFormError("Select a farm and fill the required crop details.");
       return;
     }
+
     try {
       setSaving(true);
       const response = await fetch(`${API_URL}/api/v1/farms/${cropForm.farm_id}/crops`, {
         method: "POST",
         headers: { ...authHeaders, "Content-Type": "application/json" },
-        body: JSON.stringify({ crop_name: cropForm.crop_name.trim(), season: cropForm.season || null, sowing_date: cropForm.sowing_date || null, expected_harvest_date: cropForm.expected_harvest_date || null, expected_quantity: Number(cropForm.expected_quantity), quantity_unit: cropForm.quantity_unit, status: cropForm.status }),
+        body: JSON.stringify({
+          crop_name: cropForm.crop_name.trim(),
+          season: cropForm.season || null,
+          sowing_date: cropForm.sowing_date || null,
+          expected_harvest_date: cropForm.expected_harvest_date || null,
+          expected_quantity: Number(cropForm.expected_quantity),
+          quantity_unit: cropForm.quantity_unit,
+          status: cropForm.status,
+        }),
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.detail || "Could not add crop.");
@@ -151,239 +258,316 @@ function FarmerDashboard({ onLogout }) {
       await loadData();
     } catch (requestError) {
       setFormError(requestError.message || "Could not add crop.");
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
   const firstName = (data?.farmer_name || "Farmer").split(" ")[0];
-  const heroMessages = [
-  "Manage your farms, track your crops, and move towards a better tomorrow.",
-  "Grow smarter, plan better, and make every acre count.",
-  "Stay on top of your crops and take the next step with confidence.",
-  "Your farm, your progress, your opportunities, all in one place.",
-  "Better planning today, stronger farming tomorrow.",
-];
-
-const [heroMessage] = useState(
-  () => heroMessages[Math.floor(Math.random() * heroMessages.length)]
-);
+  const farmerName = data?.farmer_name || "Farmer";
   const upcoming = data?.upcoming_harvests || [];
+  const totalArea = data?.total_area ?? farms.reduce((sum, farm) => sum + Number(farm.area || 0), 0);
+  const activeCrops = data?.active_crops ?? crops.length;
+  const harvestReady = data?.harvest_ready ?? crops.filter((crop) => String(crop.status).toUpperCase() === "HARVEST_READY").length;
+  const upcomingBookings = data?.upcoming_bookings ?? 0;
+  const weather = data?.weather || {};
+  const temperature = weather.temperature ?? weather.temp ?? "32";
+  const maxTemp = weather.max_temperature ?? weather.max_temp ?? "34";
+  const minTemp = weather.min_temperature ?? weather.min_temp ?? "24";
+  const rain = weather.rain_probability ?? weather.rain ?? "0";
+  const wind = weather.wind_speed ?? weather.wind ?? "12";
 
-  const actionCopy = {
-    "My Bookings": "Your booking area is ready for the booking module. From here you will be able to review upcoming and past procurement visits.",
-    "Live Queue": "Your live queue area is ready. Once a procurement visit is booked, queue progress can be shown here.",
-    "Procurement": "Your procurement journey starts from a centre and booking. This action is now connected to the dashboard interaction layer.",
-    "Payments": "Your payment status area is ready for payment and settlement details from the procurement journey.",
-    "Notifications": "Your latest farmer notifications will appear here.",
-    "Advisory": "Farming advisories will appear here based on your crops and profile.",
-    "Schemes": "Government schemes matched to your farmer profile will appear here.",
-    "Profile": "Your farmer profile and account details will appear here."
-  };
+  const activities = [
+    { icon: Sprout, title: crops[0] ? `Crop added: ${crops[0].crop_name}` : "Crop activity", time: "2 hours ago" },
+    { icon: Tractor, title: farms[0] ? `Farm updated: ${farms[0].farm_name}` : "Farm activity", time: "3 hours ago" },
+    { icon: MapPin, title: "Centre search near Mohra", time: "5 hours ago" },
+    { icon: CalendarDays, title: "Checked booking slots", time: "1 day ago" },
+  ];
 
   const handleNav = (label) => {
-    const targets = {
-      "Dashboard": null,
-      "My Farms": "my-farms",
-      "My Crops": "my-farms",
-      "Find Centre": "find-centre"
-    };
-    const target = targets[label];
-    if (target) {
-      document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (label === "Dashboard") {
+      setSectionPage(null);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    if (label === "Dashboard") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (["My Farms", "My Crops", "Find Centre"].includes(label)) {
+      setSectionPage(label);
       return;
     }
     setModal(`info:${label}`);
   };
+
   if (sectionPage) {
-  return (
-    <FarmerSectionPage
-      section={sectionPage}
-      farms={farms}
-      crops={crops}
-      onBack={() => setSectionPage(null)}
-    />
-  );
-}
+    return <FarmerSectionPage section={sectionPage} farms={farms} crops={crops} onBack={() => setSectionPage(null)} />;
+  }
 
   return (
-    <main className="min-h-screen bg-[#f4f7f2] text-[#17251b]">
+    <main className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_70%_5%,#ffffff_0,#e9f6ef_32%,#dceee5_68%,#d3e6dc_100%)] text-[#10251a]">
       <div className="flex min-h-screen">
-        <aside className="hidden w-[238px] shrink-0 border-r border-[#e1e8e2] bg-white lg:flex lg:flex-col">
-          <div className="px-6 pb-7 pt-7">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#e8f5e9] text-[#176b3e]"><Leaf size={25} strokeWidth={2.2} /></div>
-              <div><p className="text-xl font-extrabold tracking-[-.05em] text-[#176b3e]">KrishiSetu</p><p className="text-[10px] text-[#758078]">Bridging Farmers to Opportunities</p></div>
+        <aside className="fixed left-4 top-4 z-30 hidden h-[calc(100vh-32px)] w-[218px] flex-col overflow-hidden rounded-[26px] border border-white/80 bg-white/58 p-3 shadow-[0_20px_55px_rgba(40,79,58,.08)] backdrop-blur-2xl lg:flex">
+          <div className="flex items-center gap-3 px-3 pb-5 pt-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#dff3e7] text-[#176c42]"><Leaf size={25} strokeWidth={2.2} /></div>
+            <div>
+              <p className="text-[20px] font-extrabold tracking-[-.055em] text-[#113d28]">KrishiSetu</p>
+              <p className="text-[9px] text-[#6d7c73]">Farm Easier, Grow Better</p>
             </div>
           </div>
-          <nav className="space-y-1 px-3">
-             <NavItem icon={House} label="Dashboard" active onClick={() => setSectionPage(null)} />
-             <NavItem icon={Tractor} label="My Farms" onClick={() => setSectionPage("My Farms")} />
-             <NavItem icon={Wheat} label="My Crops" onClick={() => setSectionPage("My Crops")} />
-             <NavItem icon={MapPin} label="Find Centre" onClick={() => setSectionPage("Find Centre")} />
+
+          <nav className="space-y-1">
+            <NavItem icon={House} label="Dashboard" active onClick={() => handleNav("Dashboard")} />
+            <NavItem icon={Tractor} label="My Farms" onClick={() => handleNav("My Farms")} />
+            <NavItem icon={Sprout} label="My Crops" onClick={() => handleNav("My Crops")} />
+            <NavItem icon={MapPin} label="Find Centre" onClick={() => handleNav("Find Centre")} />
             <NavItem icon={CalendarDays} label="My Bookings" onClick={() => handleNav("My Bookings")} />
-            <NavItem icon={Users} label="Live Queue" onClick={() => handleNav("Live Queue")} />
-            <NavItem icon={FileText} label="Procurement" onClick={() => handleNav("Procurement")} />
-            <NavItem icon={IndianRupeeIcon} label="Payments" />
+            <NavItem icon={IndianRupee} label="Market Prices" onClick={() => handleNav("Market Prices")} />
             <NavItem icon={Bell} label="Notifications" badge="3" onClick={() => handleNav("Notifications")} />
-            <NavItem icon={Sprout} label="Advisory" onClick={() => handleNav("Advisory")} />
-            <NavItem icon={FileText} label="Schemes" onClick={() => handleNav("Schemes")} />
-            <NavItem icon={UserRound} label="Profile" onClick={() => handleNav("Profile")} />
+            <NavItem icon={Settings} label="Settings" onClick={() => handleNav("Settings")} />
           </nav>
-          <div className="mt-auto p-4">
-            <div className="overflow-hidden rounded-2xl bg-[#edf8f0] p-4">
-              <p className="text-sm font-bold text-[#176b3e]">Need Help?</p>
-              <p className="mt-1 text-xs text-[#526158]">Call our support</p>
-              <p className="mt-1 text-lg font-extrabold text-[#176b3e]">1800-123-4567</p>
-              <img src={supportImage} alt="" className="mt-4 h-16 w-full rounded-xl object-cover" />
-              <p className="mt-3 text-sm font-bold text-[#176b3e]">Kisan ka Saathi </p>
-              <p className="text-xs font-semibold text-[#526158]">Har Kadam Par</p>
-            </div>
+
+          <div className="mt-auto rounded-[22px] bg-gradient-to-br from-[#effaf2] to-[#d9f0df] p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/75 text-[#16804a]"><Sprout size={21} /></div>
+            <p className="mt-3 text-[14px] font-bold leading-tight text-[#24543a]">Better Farms<br />Brighter Futures</p>
+            <button type="button" onClick={() => handleNav("Advisory")} className="mt-3 flex h-8 w-8 items-center justify-center rounded-full bg-[#1b8a51] text-white"><ChevronRight size={16} /></button>
           </div>
         </aside>
 
-        <div className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-[#e1e8e2] bg-white/95 backdrop-blur">
-            <div className="flex h-[72px] items-center gap-4 px-5 sm:px-7 xl:px-8">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f5e9] text-[#176b3e] lg:hidden"><Leaf size={22} /></div>
-              <div className="relative max-w-2xl flex-1">
-                <Search size={19} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#536158]" />
-                <input placeholder="Search centres, crops, schemes..." className="w-full rounded-full bg-[#f0f4f0] py-3 pl-11 pr-4 text-sm text-[#25352a] outline-none placeholder:text-[#7b867f] focus:ring-2 focus:ring-[#176b3e]/15" />
+        <div className="min-w-0 flex-1 lg:pl-[250px]">
+          <header className="sticky top-0 z-20 px-4 pt-4 sm:px-6 lg:px-7">
+            <div className="mx-auto flex h-[70px] max-w-[1280px] items-center gap-4 rounded-[22px] border border-white/85 bg-white/65 px-4 shadow-[0_12px_35px_rgba(43,77,57,.07)] backdrop-blur-2xl sm:px-5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#dff3e7] text-[#176c42] lg:hidden"><Leaf size={21} /></div>
+              <div className="relative max-w-[590px] flex-1">
+                <Search size={19} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#61736a]" />
+                <input className="w-full rounded-full border border-white/70 bg-white/65 py-3 pl-11 pr-4 text-sm outline-none placeholder:text-[#718078] focus:ring-2 focus:ring-[#4a9b70]/20" placeholder="Search farms, crops, centres, market prices..." />
               </div>
-              <button type="button" onClick={() => handleNav("Notifications")} className="relative rounded-full p-2.5 text-[#33453a] hover:bg-[#f1f5f1]"><Bell size={21} /><span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#d9363e] text-[9px] font-bold text-white">3</span></button>
-              <span className="h-8 w-px bg-[#e2e8e2]" />
-              <button type="button" onClick={() => handleNav("Profile")} className="hidden items-center gap-3 sm:flex">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#176b3e] text-lg font-bold text-white">{firstName[0]}</span>
-                <span className="text-left"><span className="block text-sm font-bold">{data?.farmer_name || "Farmer"}</span><span className="block text-xs text-[#718078]">Farmer</span></span>
-                <ChevronDown size={17} className="text-[#4d5b53]" />
+              <div className="hidden items-center gap-3 xl:flex">
+                <CloudSun size={28} className="text-[#e2a51a]" />
+                <div><p className="text-sm font-bold">{temperature}°C</p><p className="text-[11px] text-[#68776f]">Saharanpur, UP</p></div>
+              </div>
+              <button type="button" onClick={() => handleNav("Notifications")} className="relative rounded-full p-2 text-[#3c5147] hover:bg-white/70">
+                <Bell size={21} />
+                <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-[#e94d52] text-[9px] font-bold text-white">3</span>
               </button>
-              <button type="button" onClick={logout} className="rounded-xl border border-[#d6e0d7] p-2.5 text-[#526158] hover:bg-[#f4f7f4] sm:hidden"><LogOut size={17} /></button>
+              <button type="button" onClick={() => handleNav("Profile")} className="hidden items-center gap-3 rounded-full bg-white/65 px-3 py-2 sm:flex">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#254c3a] text-sm font-bold text-white">{firstName[0]}</span>
+                <span className="text-left"><span className="block text-sm font-bold">{farmerName}</span><span className="block text-[10px] text-[#748178]">Farmer</span></span>
+                <ChevronDown size={16} className="text-[#56665d]" />
+              </button>
+              <button type="button" onClick={logout} className="rounded-full p-2 text-[#56665d] sm:hidden"><LogOut size={18} /></button>
             </div>
           </header>
 
-          <section className="mx-auto w-full max-w-[1280px] px-5 py-6 sm:px-7 xl:px-8 xl:py-7">
-            <div className="relative overflow-hidden rounded-[22px] bg-[#145d37] shadow-sm">
-              <img src={heroImage} alt="Agricultural field" className="absolute inset-0 h-full w-full object-cover opacity-70" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0d4e2d]/95 via-[#126238]/75 to-transparent" />
-              <div className="relative flex min-h-[210px] items-center justify-between gap-6 px-7 py-8 sm:px-9">
-                <div className="max-w-xl text-white">
-                  <p className="text-sm font-semibold text-white/80">Good Morning,</p>
-                  <h1 className="mt-1 text-3xl font-extrabold tracking-[-.045em] sm:text-4xl">
-                    {data?.farmer_name || "Farmer"} <span aria-hidden="true">&#x1F60A;</span>
-                  </h1>
-                  <p className="mt-3 max-w-md text-sm leading-6 text-white/85">{heroMessage}</p>
-                  <div className="mt-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold backdrop-blur">Better farming today, a stronger tomorrow.👍</div>
+          <section className="mx-auto w-full max-w-[1280px] px-4 pb-10 pt-5 sm:px-6 lg:px-7">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-4 px-1">
+              <div>
+                <p className="text-sm font-medium text-[#527065]">Good morning,</p>
+                <h1 className="mt-1 text-[32px] font-extrabold tracking-[-.045em] text-[#10291d] sm:text-[38px]">Hello, {farmerName} <span className="align-middle">🌿</span></h1>
+                <p className="mt-1 text-[15px] text-[#61766b]">Here's what's happening on your farms today.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="hidden rounded-2xl border border-white/80 bg-white/60 px-4 py-2.5 sm:block">
+                  <p className="text-xs font-bold">Wed, 10 Sep 2026</p>
+                  <p className="text-[10px] text-[#7a877f]">A new day for a better harvest!</p>
                 </div>
-                <div className="hidden w-[220px] shrink-0 rounded-2xl border border-white/30 bg-white/90 p-4 text-[#24372b] shadow-xl md:block">
-                  <div className="flex items-center gap-3"><span className="text-3xl">☀️</span><div><p className="text-2xl font-extrabold">31°C</p><p className="text-xs text-[#536158]">Saharanpur, U.P.</p></div></div>
-                  <div className="mt-4 rounded-xl bg-[#eaf6eb] px-3 py-3 text-xs font-semibold text-[#176b3e]">🌱 Good weather for field activities today!</div>
+                <div className="rounded-2xl border border-white/80 bg-white/60 px-4 py-2.5">
+                  <p className="text-xs font-bold">{data?.district || "Saharanpur"}, UP</p>
+                  <p className="text-[10px] text-[#7a877f]">Your farming region</p>
                 </div>
               </div>
             </div>
 
-            {loading && <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{[1,2,3,4].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl border border-[#e0e7e0] bg-white" />)}</div>}
-            {!loading && error && <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}<button type="button" onClick={loadData} className="ml-2 font-semibold underline">Try again</button></div>}
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(390px,.95fr)]">
+              <div className="space-y-5">
+                <GlassCard className="overflow-hidden p-0">
+                  <div className="relative h-[390px] overflow-hidden sm:h-[470px]">
+                    <img src={farmImage} alt="Farm aerial view" className={`absolute inset-0 h-full w-full object-cover transition duration-500 ${mapMode === "3D View" ? "scale-[1.05]" : "scale-100"}`} />
+                    <div className={`absolute inset-0 ${mapMode === "3D View" ? "bg-[linear-gradient(145deg,rgba(17,91,55,.06),rgba(0,0,0,.18))]" : mapMode === "Satellite" ? "bg-[rgba(25,65,44,.08)]" : "bg-[rgba(244,248,244,.18)]"}`} />
 
-            {!loading && data && <>
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Metric icon={Leaf} label="Farms" value={data.total_farms} sub={data.total_farms ? `Total land: ${farms.reduce((sum, farm) => sum + Number(farm.area || 0), 0)} acres` : "Add your first farm"} />
-                <Metric icon={Leaf} label="Crops" value={data.total_crops} sub={data.total_crops ? "Crops in your farms" : "Add your first crop"} tone="green" />
-                <Metric icon={Sprout} label="Growing" value={data.growing_crops} sub="Crops in field" tone="amber" />
-                <Metric icon={Wheat} label="Harvest ready" value={data.harvest_ready_crops} sub="Ready for procurement" tone="purple" />
+                    <div className="absolute left-4 top-4 flex overflow-hidden rounded-full border border-white/70 bg-white/80 p-1 shadow-lg backdrop-blur-md">
+                      {["Map", "Satellite", "3D View"].map((mode) => (
+                        <button key={mode} type="button" onClick={() => setMapMode(mode)} className={`rounded-full px-4 py-2 text-xs font-semibold transition ${mapMode === mode ? "bg-[#16814a] text-white" : "text-[#31483d] hover:bg-white"}`}>{mode}</button>
+                      ))}
+                    </div>
+
+                    <div className="absolute right-4 top-4 flex flex-col gap-2">
+                      <button type="button" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/85 text-[#24493a] shadow-lg backdrop-blur-md"><LayersIcon /></button>
+                      <button type="button" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white/85 text-[#24493a] shadow-lg backdrop-blur-md"><TargetIcon /></button>
+                    </div>
+
+                    <FarmZone className="left-[12%] top-[25%]" tone="green" title={farms[0]?.farm_name || "Black Lentil Farm"} subtitle={`${farms[0]?.area || 8} ${farms[0]?.area_unit || "bigha"} · Healthy`} />
+                    <FarmZone className="right-[12%] top-[27%]" tone="amber" title={crops[0]?.crop_name || "Corn Field"} subtitle={`${crops[0]?.expected_quantity || 5} acre · Growing`} />
+                    <FarmZone className="bottom-[17%] left-[29%]" tone="red" title="Field 3" subtitle="3 bigha · Attention" alert />
+
+                    <div className="absolute bottom-4 right-4 flex flex-col gap-1 overflow-hidden rounded-2xl border border-white/70 bg-white/85 shadow-lg backdrop-blur-md">
+                      <button type="button" className="flex h-10 w-11 items-center justify-center text-xl">+</button>
+                      <button type="button" className="flex h-10 w-11 items-center justify-center border-t border-[#dbe4dd] text-xl">−</button>
+                    </div>
+                    <div className="absolute bottom-4 left-4 rounded-full border border-white/70 bg-white/85 px-3 py-2 text-[11px] font-medium shadow-lg backdrop-blur-md">
+                      <span className="mr-3 inline-flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full bg-[#20bf67]" />Healthy</span>
+                      <span className="mr-3 inline-flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full bg-[#f5c52b]" />Growing</span>
+                      <span className="inline-flex items-center gap-1"><i className="h-2.5 w-2.5 rounded-full bg-[#f04b4f]" />Attention</span>
+                    </div>
+                    <div className="absolute bottom-4 right-16 rounded-xl border border-white/70 bg-white/85 px-3 py-2 text-[11px] font-semibold text-[#24483a] shadow-lg backdrop-blur-md">3D farm view</div>
+                  </div>
+                </GlassCard>
+
+                <GlassCard className="p-5">
+                  <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">My Crops</h2><button type="button" onClick={() => handleNav("My Crops")} className="text-xs font-semibold text-[#147a48]">View All →</button></div>
+                  {loading ? <p className="text-sm text-[#748078]">Loading crops...</p> : crops.length === 0 ? <EmptyState text="No crops added yet." action="Add Crop" onClick={() => openCropModal()} /> : (
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {crops.slice(0, 3).map((crop, index) => <CropCard key={crop.id || index} crop={crop} image={cropCardImage} />)}
+                    </div>
+                  )}
+                </GlassCard>
               </div>
 
-              <div className="mt-6 grid gap-5 xl:grid-cols-[1.05fr_1fr_190px]">
-                <Panel title="My Farms" subtitle="Manage your farm land and details" icon={Leaf} onClick={() => setSectionPage("My Farms")} action={<button type="button" onClick={(event) => { event.stopPropagation(); openFarmModal(); }} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832]"><Plus size={16}/> Add Farm</button>}>
-                  {farms.length ? farms.map((farm) => <FarmCard key={farm.id} farm={farm} onAddCrop={() => openCropModal(farm.id)} />) : <EmptyState text="No farms added yet." action="Add farm" onAction={openFarmModal} />}
-                </Panel>
+              <div className="space-y-5">
+                <GlassCard className="p-5">
+                  <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">Weather Conditions</h2><button type="button" className="text-xs font-semibold text-[#147a48]">View Details →</button></div>
+                  <div className="grid grid-cols-[1.1fr_1fr] items-center gap-4">
+                    <div className="flex items-center gap-3"><CloudSun size={61} strokeWidth={1.25} className="text-[#e4aa1c]" /><div><p className="text-3xl font-extrabold tracking-tight">{temperature}°C</p><p className="text-sm text-[#61736a]">Mostly clear</p><p className="mt-1 text-xs text-[#75837b]"><MapPin size={12} className="mr-1 inline" />Saharanpur, UP</p></div></div>
+                    <div className="grid grid-cols-2 gap-3 border-l border-[#dfe8e1] pl-4 text-xs">
+                      <Metric icon="↑" value={`${maxTemp}°C`} label="Max" />
+                      <Metric icon="↓" value={`${minTemp}°C`} label="Min" />
+                      <Metric icon="💧" value={`${rain}%`} label="Rain" />
+                      <Metric icon="≋" value={`${wind} km/h`} label="Wind" />
+                    </div>
+                  </div>
+                </GlassCard>
 
-                <Panel title="My Crops" subtitle="Track what you are growing" icon={Leaf} onClick={() => setSectionPage("My Crops")} action={<button type="button" onClick={(event) => { event.stopPropagation(); farms.length && openCropModal(); }} disabled={!farms.length} className="inline-flex items-center gap-1.5 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#115832] disabled:opacity-40"><Plus size={16}/> Add Crop</button>}>
-                  {crops.length ? crops.map((crop) => <CropRow key={crop.id} crop={crop} farmName={farms.find((farm) => farm.id === crop.farm_id)?.farm_name} />) : <EmptyState text="No crops added yet" sub="Start by adding crops to your farm." action={farms.length ? "Add your first crop" : undefined} onAction={farms.length ? () => openCropModal() : undefined} />}
-                </Panel>
+                <GlassCard className="p-5">
+                  <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">Farm Overview</h2><button type="button" className="text-xs font-semibold text-[#147a48]">View All →</button></div>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <OverviewItem icon={Tractor} value={farms.length || 0} label="Total Farms" sub={`${totalArea || 0} area`} />
+                    <OverviewItem icon={Sprout} value={activeCrops || 0} label="Active Crops" sub={activeCrops ? `${activeCrops} growing` : "None yet"} />
+                    <OverviewItem icon={Wheat} value={harvestReady || 0} label="Harvest Ready" sub="Next step" />
+                    <OverviewItem icon={CalendarDays} value={upcomingBookings || 0} label="Upcoming Bookings" sub={upcomingBookings ? "Scheduled" : "None scheduled"} />
+                  </div>
+                </GlassCard>
 
-                <div className="hidden overflow-hidden rounded-2xl border border-[#e1e8e2] bg-gradient-to-b from-[#edf8dd] to-[#f8fcf4] xl:block">
-                  <div className="relative h-[170px] overflow-hidden bg-[#eaf4e5] p-5 text-center"><img src={cropCardImage} alt="" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#dff0d7]/55 via-transparent to-transparent" /></div>
-                  <div className="p-5"><p className="text-xl font-extrabold leading-tight text-[#176b3e]">Healthy Crops<br/>Brighter Futures</p><p className="mt-2 text-center text-xs text-[#536158]">Track Â· Plan Â· Prosper</p></div>
+                <GlassCard className="overflow-hidden bg-gradient-to-br from-white/80 via-[#edf9f0]/80 to-[#d9f1df]/80 p-5">
+                  <div className="flex items-center justify-between"><div className="flex items-center gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#dff4e5] text-[#157a48]"><BotIcon /></span><div><h2 className="text-lg font-extrabold">KrishiSetu AI</h2><p className="text-xs text-[#708078]">Your farming companion</p></div></div><button type="button" onClick={() => handleNav("Advisory")} className="text-xs font-semibold text-[#147a48]">View All →</button></div>
+                  <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/80 bg-white/70 p-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e5f7e9] text-[#1a8b50]"><Leaf size={21} /></span>
+                    <p className="flex-1 text-xs leading-relaxed text-[#405149]">Based on current weather, you should irrigate your <strong className="text-[#142d20]">{crops[0]?.crop_name || "Sweet Corn"} field within 2 days.</strong></p>
+                    <ChevronRight size={19} className="text-[#16804b]" />
+                  </div>
+                </GlassCard>
+
+                <GlassCard className="p-5">
+                  <h2 className="mb-4 text-lg font-extrabold">Quick Actions</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    <ActionButton icon={Plus} label="Add Farm" onClick={openFarmModal} />
+                    <ActionButton icon={Sprout} label="Add Crop" onClick={() => openCropModal()} />
+                    <ActionButton icon={MapPin} label="Find Centre" onClick={() => handleNav("Find Centre")} />
+                    <ActionButton icon={CalendarDays} label="My Bookings" onClick={() => handleNav("My Bookings")} />
+                  </div>
+                </GlassCard>
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-5 xl:grid-cols-[.95fr_1.05fr]">
+              <GlassCard className="p-5">
+                <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">Nearby Procurement Centres</h2><button type="button" onClick={() => handleNav("Find Centre")} className="text-xs font-semibold text-[#147a48]">View All →</button></div>
+                <div className="relative h-[230px] overflow-hidden rounded-[20px] border border-white/80">
+                  <img src={centreImage} alt="Procurement centre area" className="h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#8bc8a3]/10 to-[#123e29]/10" />
+                  <div className="absolute left-[37%] top-[34%] rounded-xl bg-white/90 px-3 py-2 text-xs font-bold shadow-lg backdrop-blur-md"><MapPin size={13} className="mr-1 inline text-[#17824b]" />Saharanpur Centre</div>
+                  <div className="absolute left-[24%] top-[60%] h-4 w-4 rounded-full border-2 border-white bg-[#16844d] shadow-lg" />
+                  <div className="absolute right-[27%] top-[52%] h-4 w-4 rounded-full border-2 border-white bg-[#16844d] shadow-lg" />
+                  <div className="absolute bottom-3 left-3 rounded-xl bg-white/88 px-3 py-2 text-[10px] font-semibold shadow backdrop-blur-md">Satellite + 3D terrain</div>
                 </div>
-              </div>
+              </GlassCard>
 
-              <div className="mt-5 grid gap-5 xl:grid-cols-[1.05fr_1fr_.9fr]">
-                <Panel title="Upcoming Harvests" subtitle="Your planned harvests and procurement opportunities" icon={CalendarDays}>
-                  {upcoming.length ? upcoming.slice(0, 3).map((crop) => <div key={crop.id} className="flex items-center justify-between rounded-xl border border-[#e3e9e3] bg-[#fbfdfb] p-4"><div><p className="font-bold">{crop.crop_name}</p><p className="mt-1 text-xs text-[#718078]">{crop.farm_name}</p></div><div className="text-right"><p className="text-xs font-semibold text-[#176b3e]">{formatDate(crop.expected_harvest_date)}</p></div></div>) : <EmptyState text="No upcoming harvests yet" sub="Add crops with expected harvest dates to see them here." action={farms.length ? "Add Crop" : undefined} onAction={farms.length ? () => openCropModal() : undefined} />}
-                </Panel>
+              <GlassCard className="p-5">
+                <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-extrabold">Recent Activity</h2><button type="button" className="text-xs font-semibold text-[#147a48]">View All →</button></div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {activities.map((activity, index) => <ActivityItem key={index} {...activity} />)}
+                </div>
+              </GlassCard>
+            </div>
 
-                <button type="button" onClick={() => setSectionPage("Find Centre")} className="group overflow-hidden rounded-2xl border border-[#d8e4da] bg-white text-left transition hover:border-[#176b3e]">
-                  <div className="relative h-full min-h-[230px] overflow-hidden bg-[#e7f3e6] p-5"><img src={centreImage} alt="" className="absolute inset-0 h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-transparent" /><div className="relative z-10"><p className="font-mono text-[10px] tracking-[.18em] text-[#7a847c]">NEXT STEP</p><p className="mt-2 text-xl font-extrabold">Find a procurement centre</p><p className="mt-2 max-w-xs text-sm leading-5 text-[#65736a]">Discover nearby centres, check available slots and book your visit.</p><span className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#176b3e] px-4 py-2.5 text-xs font-bold text-white">Explore Centres <ChevronRight size={15}/></span></div><MapPin className="absolute bottom-6 right-7 text-[#176b3e]/30" size={78}/></div>
-                </button>
-
-                <Panel title="Quick Actions" subtitle="Common tasks" icon={Sprout}>
-                  <div className="grid grid-cols-2 gap-3"><QuickAction icon={CalendarDays} label="Book a Slot" onClick={() => handleNav("Find Centre")} /><QuickAction icon={FileText} label="View Bookings" onClick={() => handleNav("My Bookings")} /><QuickAction icon={Users} label="Check Queue" onClick={() => handleNav("Live Queue")} /><QuickAction icon={RupeeIcon} label="Payment Status" /></div>
-                </Panel>
-              </div>
-
-              <div className="mt-5 flex items-center justify-between gap-5 overflow-hidden rounded-2xl border border-[#dce7de] bg-white px-5 py-4"><div className="flex items-center gap-4"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#e8f5e9] text-[#176b3e]"><Leaf size={23}/></div><div><p className="font-bold">Government Schemes for You</p><p className="text-xs text-[#718078]">Explore schemes you may be eligible for based on your profile.</p></div></div><button type="button" onClick={() => handleNav("Schemes")} className="hidden items-center gap-2 rounded-lg border border-[#9db9a4] px-4 py-2.5 text-xs font-bold text-[#176b3e] sm:inline-flex">Explore Schemes <ChevronRight size={15}/></button></div>
-            </>}
+            {error && <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
           </section>
         </div>
       </div>
 
-      {typeof modal === "string" && modal.startsWith("info:") && <Modal title={modal.slice(5)} onClose={() => setModal(null)}><div className="space-y-4"><div className="rounded-xl bg-[#edf8f0] p-4 text-sm leading-6 text-[#31523d]">{actionCopy[modal.slice(5)] || "This dashboard action is connected and ready for its module."}</div><button type="button" onClick={() => setModal(null)} className="w-full rounded-lg bg-[#176b3e] px-4 py-3 text-sm font-bold text-white hover:bg-[#115832]">Done</button></div></Modal>}      {modal === "farm" && <Modal title="Add your farm" onClose={() => !saving && setModal(null)}><form onSubmit={saveFarm} className="space-y-3.5"><Field label="Farm name" value={farmForm.farm_name} onChange={(v) => setFarmForm({ ...farmForm, farm_name: v })} placeholder="My farm" /><div className="grid gap-3 sm:grid-cols-2"><Field label="State" value={farmForm.state} onChange={(v) => setFarmForm({ ...farmForm, state: v })} placeholder="Jharkhand" /><Field label="District" value={farmForm.district} onChange={(v) => setFarmForm({ ...farmForm, district: v })} placeholder="Ranchi" /></div><div className="grid gap-3 sm:grid-cols-2"><Field label="Village" value={farmForm.village} onChange={(v) => setFarmForm({ ...farmForm, village: v })} placeholder="Village name" /><Field label="Area" type="number" value={farmForm.area} onChange={(v) => setFarmForm({ ...farmForm, area: v })} placeholder="2.5" /></div><div className="grid gap-3 sm:grid-cols-2"><Field label="Area unit" value={farmForm.area_unit} onChange={(v) => setFarmForm({ ...farmForm, area_unit: v })} placeholder="acre" /><Field label="Irrigation type" value={farmForm.irrigation_type} onChange={(v) => setFarmForm({ ...farmForm, irrigation_type: v })} placeholder="Borewell / Rainfed" /></div>{formError && <p className="text-xs font-medium text-red-600">{formError}</p>}<SubmitButton loading={saving} label="Save farm" /></form></Modal>}
-      {modal === "crop" && <Modal title="Add a crop" onClose={() => !saving && setModal(null)}><form onSubmit={saveCrop} className="space-y-3.5"><label className="block"><span className="mb-1.5 block text-xs font-semibold">Farm</span><select value={cropForm.farm_id} onChange={(e) => setCropForm({ ...cropForm, farm_id: e.target.value })} className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]"><option value="">Select farm</option>{farms.map((farm) => <option key={farm.id} value={farm.id}>{farm.farm_name}</option>)}</select></label><Field label="Crop name" value={cropForm.crop_name} onChange={(v) => setCropForm({ ...cropForm, crop_name: v })} placeholder="Wheat" /><div className="grid gap-3 sm:grid-cols-2"><Field label="Season" value={cropForm.season} onChange={(v) => setCropForm({ ...cropForm, season: v })} placeholder="Rabi" /><Field label="Expected quantity" type="number" value={cropForm.expected_quantity} onChange={(v) => setCropForm({ ...cropForm, expected_quantity: v })} placeholder="20" /></div><div className="grid gap-3 sm:grid-cols-2"><Field label="Sowing date" type="date" value={cropForm.sowing_date} onChange={(v) => setCropForm({ ...cropForm, sowing_date: v })} /><Field label="Expected harvest" type="date" value={cropForm.expected_harvest_date} onChange={(v) => setCropForm({ ...cropForm, expected_harvest_date: v })} /></div><div className="grid gap-3 sm:grid-cols-2"><Field label="Quantity unit" value={cropForm.quantity_unit} onChange={(v) => setCropForm({ ...cropForm, quantity_unit: v })} placeholder="quintal" /><label className="block"><span className="mb-1.5 block text-xs font-semibold">Status</span><select value={cropForm.status} onChange={(e) => setCropForm({ ...cropForm, status: e.target.value })} className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]"><option value="GROWING">Growing</option><option value="HARVEST_READY">Harvest ready</option></select></label></div>{formError && <p className="text-xs font-medium text-red-600">{formError}</p>}<SubmitButton loading={saving} label="Save crop" /></form></Modal>}
+      {modal && modal.startsWith("info:") && (
+        <Modal title={modal.slice(5)} onClose={() => setModal(null)}>
+          <p className="text-sm leading-6 text-[#63736b]">This section is connected to the existing dashboard navigation and can use the existing farmer modules.</p>
+          <button type="button" onClick={() => setModal(null)} className="mt-5 w-full rounded-xl bg-[#16804b] px-4 py-3 text-sm font-bold text-white">Close</button>
+        </Modal>
+      )}
+
+      {modal === "farm" && (
+        <Modal title="Add Farm" onClose={() => setModal(null)}>
+          <form onSubmit={saveFarm} className="space-y-3">
+            <Field label="Farm name" value={farmForm.farm_name} onChange={(value) => setFarmForm((p) => ({ ...p, farm_name: value }))} />
+            <div className="grid grid-cols-2 gap-3"><Field label="State" value={farmForm.state} onChange={(value) => setFarmForm((p) => ({ ...p, state: value }))} /><Field label="District" value={farmForm.district} onChange={(value) => setFarmForm((p) => ({ ...p, district: value }))} /></div>
+            <div className="grid grid-cols-2 gap-3"><Field label="Village" value={farmForm.village} onChange={(value) => setFarmForm((p) => ({ ...p, village: value }))} /><Field label="Area" type="number" value={farmForm.area} onChange={(value) => setFarmForm((p) => ({ ...p, area: value }))} /></div>
+            <Field label="Irrigation type" value={farmForm.irrigation_type} onChange={(value) => setFarmForm((p) => ({ ...p, irrigation_type: value }))} placeholder="Optional" />
+            {formError && <p className="text-xs font-medium text-red-600">{formError}</p>}
+            <button disabled={saving} className="w-full rounded-xl bg-[#16804b] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? "Saving..." : "Add Farm"}</button>
+          </form>
+        </Modal>
+      )}
+
+      {modal === "crop" && (
+        <Modal title="Add Crop" onClose={() => setModal(null)}>
+          <form onSubmit={saveCrop} className="space-y-3">
+            <label className="block text-xs font-semibold text-[#53645b]">Farm<select value={cropForm.farm_id} onChange={(e) => setCropForm((p) => ({ ...p, farm_id: e.target.value }))} className="mt-1 w-full rounded-xl border border-[#dce6de] bg-white px-3 py-3 text-sm outline-none"><option value="">Select farm</option>{farms.map((farm) => <option key={farm.id} value={farm.id}>{farm.farm_name}</option>)}</select></label>
+            <Field label="Crop name" value={cropForm.crop_name} onChange={(value) => setCropForm((p) => ({ ...p, crop_name: value }))} />
+            <div className="grid grid-cols-2 gap-3"><Field label="Season" value={cropForm.season} onChange={(value) => setCropForm((p) => ({ ...p, season: value }))} /><Field label="Expected quantity" type="number" value={cropForm.expected_quantity} onChange={(value) => setCropForm((p) => ({ ...p, expected_quantity: value }))} /></div>
+            <div className="grid grid-cols-2 gap-3"><Field label="Sowing date" type="date" value={cropForm.sowing_date} onChange={(value) => setCropForm((p) => ({ ...p, sowing_date: value }))} /><Field label="Harvest date" type="date" value={cropForm.expected_harvest_date} onChange={(value) => setCropForm((p) => ({ ...p, expected_harvest_date: value }))} /></div>
+            {formError && <p className="text-xs font-medium text-red-600">{formError}</p>}
+            <button disabled={saving} className="w-full rounded-xl bg-[#16804b] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">{saving ? "Saving..." : "Add Crop"}</button>
+          </form>
+        </Modal>
+      )}
     </main>
   );
 }
 
-function NavItem({ icon: Icon, label, active, badge, onClick }) {
-  return <button type="button" onClick={onClick} className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-sm font-medium transition ${active ? "bg-[#eaf5ec] font-bold text-[#176b3e]" : "text-[#33453a] hover:bg-[#f3f7f3]"}`}><Icon size={19} /> <span className="flex-1 text-left">{label}</span>{badge && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#d9363e] px-1 text-[10px] font-bold text-white">{badge}</span>}</button>;
+function FarmZone({ className, tone, title, subtitle, alert }) {
+  const toneClass = tone === "green" ? "bg-white/88 text-[#173c2b]" : tone === "amber" ? "bg-white/88 text-[#473b17]" : "bg-white/90 text-[#3d2727]";
+  return <div className={`absolute rounded-2xl border border-white/90 px-3 py-2 shadow-lg backdrop-blur-md ${toneClass} ${className}`}><p className="text-[11px] font-extrabold">{alert ? "⚠ " : "🌿 "}{title}</p><p className="mt-0.5 text-[10px] text-[#65736c]">{subtitle}</p></div>;
 }
 
-function Metric({ icon: Icon, label, value, sub, tone = "green" }) {
-  const tones = { green: "bg-[#e5f4e7] text-[#176b3e]", amber: "bg-[#fff2d9] text-[#a26712]", purple: "bg-[#eee8ff] text-[#6941a5]" };
-  return <div className="group flex min-h-[116px] items-center justify-between rounded-2xl border border-[#dfe7df] bg-white p-5 shadow-[0_3px_14px_rgba(26,52,34,.025)]"><div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}><Icon size={24}/></div><div className="ml-4 flex-1"><p className="text-3xl font-extrabold tracking-[-.05em] text-[#111a14]">{value ?? 0}</p><p className="font-medium text-[#26362b]">{label}</p><p className="mt-1 text-xs text-[#718078]">{sub}</p></div><ChevronRight size={20} className="text-[#526158] transition group-hover:translate-x-0.5"/></div>;
+function CropCard({ crop, image }) {
+  const status = String(crop.status || "GROWING").toUpperCase();
+  const dot = status === "HEALTHY" ? "bg-[#20bf67]" : status.includes("HARVEST") ? "bg-[#f5a623]" : "bg-[#f5c52b]";
+  return <div className="flex min-w-0 items-center gap-3 rounded-[18px] border border-white/90 bg-white/65 p-2.5"><img src={image} alt="" className="h-[76px] w-[68px] rounded-xl object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-extrabold">{crop.crop_name}</p><p className="mt-1 text-[11px] text-[#718078]">{crop.expected_quantity || "--"} {crop.quantity_unit || "quintal"}</p><div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-[#5d6d64]"><i className={`h-2.5 w-2.5 rounded-full ${dot}`} />{statusLabel(crop.status || "GROWING")}</div></div><ChevronRight size={16} className="text-[#708077]" /></div>;
 }
 
-function Panel({ title, subtitle, icon: Icon, action, children, onClick }) {
-  return <section onClick={onClick} className={`rounded-2xl border border-[#dfe7df] bg-white p-5 shadow-[0_3px_14px_rgba(26,52,34,.025)] ${onClick ? "cursor-pointer transition hover:border-[#9dbba3] hover:shadow-md" : ""}`}><div className="flex items-start justify-between gap-3"><div className="flex items-start gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9f5ea] text-[#176b3e]"><Icon size={21}/></div><div><h2 className="text-lg font-extrabold tracking-[-.025em]">{title}</h2><p className="text-xs text-[#718078]">{subtitle}</p></div></div>{action}</div><div className="mt-5">{children}</div></section>;
+function Metric({ icon, value, label }) {
+  return <div><p className="font-bold text-[#233a2e]"><span className="mr-1 text-[#16804b]">{icon}</span>{value}</p><p className="mt-0.5 text-[9px] text-[#78867e]">{label}</p></div>;
 }
 
-function FarmCard({ farm, onAddCrop }) {
-  return <div className="group rounded-xl border border-[#cfe0d2] bg-[#fbfdfb] p-4 transition hover:border-[#72a980]"><div className="flex items-center gap-4"><img src={farmImage} alt="" className="hidden h-[86px] w-[110px] shrink-0 rounded-lg object-cover sm:block" /><div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{farm.farm_name}</p><p className="mt-1 flex items-center gap-1 text-xs text-[#718078]"><MapPin size={13}/>{farm.village}, {farm.district}, {farm.state}</p><p className="mt-2 text-xs font-medium text-[#536158]">{farm.area} {farm.area_unit} Â· {farm.irrigation_type || "Irrigation not set"}</p></div><ChevronRight size={20} className="text-[#176b3e]"/></div><button type="button" onClick={onAddCrop} className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#bfd2c3] bg-white px-3 py-2 text-xs font-semibold text-[#176b3e] hover:bg-[#edf7ef]"><Plus size={14}/> Add crop</button></div></div></div>;
+function OverviewItem({ icon: Icon, value, label, sub }) {
+  return <div className="rounded-2xl bg-white/55 p-3"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e3f5e8] text-[#16804b]"><Icon size={18} /></span><p className="mt-2 text-xl font-extrabold">{value}</p><p className="text-[10px] font-semibold text-[#52635a]">{label}</p><p className="mt-0.5 text-[9px] text-[#87928c]">{sub}</p></div>;
 }
 
-function CropRow({ crop, farmName }) {
-  return <div className="flex items-center justify-between rounded-xl border border-[#e3e9e3] bg-[#fbfdfb] p-4"><div className="flex min-w-0 items-center gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e9f6ea] text-[#176b3e]"><Sprout size={21}/></div><div className="min-w-0"><p className="truncate font-bold">{crop.crop_name}</p><p className="mt-1 truncate text-xs text-[#718078]">{farmName || "Farm"}{crop.season ? ` Â· ${crop.season}` : ""}</p></div></div><span className="rounded-full bg-[#e8f5ea] px-2.5 py-1 text-[10px] font-bold text-[#176b3e]">{statusLabel(crop.status)}</span></div>;
+function ActionButton({ icon: Icon, label, onClick }) {
+  return <button type="button" onClick={onClick} className="flex items-center gap-3 rounded-2xl border border-white/90 bg-white/58 px-3 py-3 text-left text-xs font-bold text-[#294338] transition hover:bg-white/90"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#def3e5] text-[#16804b]"><Icon size={18} /></span>{label}</button>;
 }
 
-function EmptyState({ text, sub, action, onAction }) {
-  return <div className="rounded-xl border border-dashed border-[#ccd9ce] bg-[#fbfdfb] px-5 py-7 text-center"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-[#eef6ef] text-[#7c8d82]"><Leaf size={20}/></div><p className="mt-3 text-sm font-semibold text-[#39483f]">{text}</p>{sub && <p className="mx-auto mt-1 max-w-sm text-xs text-[#7a867f]">{sub}</p>}{action && <button type="button" onClick={onAction} className="mt-4 rounded-lg border border-[#afd0b6] bg-white px-4 py-2 text-xs font-bold text-[#176b3e] hover:bg-[#eff8f0]">{action}</button>}</div>;
+function ActivityItem({ icon: Icon, title, time }) {
+  return <div className="flex items-center gap-3 rounded-2xl bg-white/48 px-3 py-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e3f5e8] text-[#16804b]"><Icon size={17} /></span><div className="min-w-0"><p className="truncate text-xs font-bold">{title}</p><p className="mt-0.5 text-[10px] text-[#839088]">{time}</p></div></div>;
 }
 
-function QuickAction({ icon: Icon, label, onClick }) {
-  return <button type="button" onClick={onClick} className="flex items-center gap-2 rounded-xl border border-[#e1e8e2] bg-[#fbfdfb] px-3 py-3 text-left text-xs font-semibold transition hover:border-[#9dbba3] hover:bg-[#f3f8f3]"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e9f5ea] text-[#176b3e]"><Icon size={16}/></span>{label}</button>;
+function EmptyState({ text, action, onClick }) {
+  return <div className="rounded-2xl border border-dashed border-[#cbd9ce] bg-white/45 p-7 text-center"><p className="text-sm text-[#718078]">{text}</p><button type="button" onClick={onClick} className="mt-3 rounded-xl bg-[#16804b] px-4 py-2 text-xs font-bold text-white">{action}</button></div>;
 }
 
-function Field({ label, value, onChange, placeholder, type = "text" }) {
-  return <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">{label}</span><input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e] focus:ring-2 focus:ring-[#176b3e]/10" /></label>;
+function Field({ label, value, onChange, type = "text", placeholder }) {
+  return <label className="block text-xs font-semibold text-[#53645b]">{label}<input type={type} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full rounded-xl border border-[#dce6de] bg-white px-3 py-3 text-sm font-normal text-[#1c3025] outline-none focus:border-[#5ba579]" /></label>;
 }
 
-function SubmitButton({ loading, label }) {
-  return <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#176b3e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#115832] disabled:cursor-not-allowed disabled:opacity-60">{loading ? "Saving..." : label}<ChevronRight size={17}/></button>;
+function Modal({ title, children, onClose }) {
+  return <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#183326]/30 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-[26px] border border-white bg-[#f9fcfa] p-5 shadow-2xl"><div className="mb-4 flex items-center justify-between"><h2 className="text-xl font-extrabold">{title}</h2><button type="button" onClick={onClose} className="rounded-full bg-[#edf3ee] p-2"><X size={18} /></button></div>{children}</div></div>;
 }
 
-function Modal({ title, onClose, children }) {
-  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#132017]/45 p-4 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-7"><div className="mb-5 flex items-center justify-between"><h2 className="text-xl font-bold tracking-[-.03em]">{title}</h2><button type="button" onClick={onClose} className="rounded-lg p-2 text-[#718078] hover:bg-[#f2f5f2]"><X size={19}/></button></div>{children}</div></div>;
-}
-
-function IndianRupeeIcon({ size = 19 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 700 }}>â‚¹</span>; }
-function RupeeIcon({ size = 16 }) { return <span style={{ fontSize: size, lineHeight: 1, fontWeight: 800 }}>â‚¹</span>; }
+function LayersIcon() { return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4"/><path d="m4 17 8 4 8-4"/></svg>; }
+function TargetIcon() { return <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M22 12h-3M12 22v-3M2 12h3"/></svg>; }
+function BotIcon() { return <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="4" y="6" width="16" height="14" rx="4"/><path d="M12 2v4M8 12h.01M16 12h.01M8 16h8"/><circle cx="12" cy="2" r="1"/></svg>; }
 
 export default FarmerDashboard;
-
-
-
-
-
-
-
