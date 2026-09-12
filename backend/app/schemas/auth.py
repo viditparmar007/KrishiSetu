@@ -40,3 +40,13 @@ class FarmerOut(BaseModel):
     preferred_language: str
 
     model_config = {"from_attributes": True}
+
+
+class FarmerUpdateRequest(BaseModel):
+    name: str | None = None
+    state: str | None = None
+    district: str | None = None
+    village: str | None = None
+    preferred_language: str | None = None
+    current_password: str | None = None
+    password: str | None = None

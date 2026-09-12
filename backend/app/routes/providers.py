@@ -1,7 +1,9 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
 
-from app.dependencies import require_role
+from app.database import get_db
+from app.dependencies import get_current_user, require_role
 from app.models.user import User
 from app.providers.exceptions import (
     ProviderConfigurationError,
@@ -50,7 +52,7 @@ def _raise_provider_http_error(exc: Exception) -> None:
 def read_weather(
     latitude: float = Query(ge=-90, le=90),
     longitude: float = Query(ge=-180, le=180),
-    current_user: User = Depends(require_role("FARMER")),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         return get_current_weather(latitude, longitude)
@@ -63,7 +65,7 @@ def read_market_prices(
     commodity: str | None = Query(default=None, max_length=80),
     state_name: str | None = Query(default=None, max_length=80),
     district: str | None = Query(default=None, max_length=80),
-    current_user: User = Depends(require_role("FARMER")),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         return get_market_prices(
@@ -78,7 +80,7 @@ def read_market_prices(
 @router.get("/schemes", response_model=list[SchemeOut])
 def read_schemes(
     search: str | None = Query(default=None, max_length=100),
-    current_user: User = Depends(require_role("FARMER")),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         return get_schemes(search=search)
@@ -116,3 +118,55 @@ def test_sms(
         ) from exc
     except (ProviderUnavailableError, ProviderConfigurationError) as exc:
         _raise_provider_http_error(exc)
+
+
+direct_router = APIRouter(
+    prefix="/api/v1",
+    tags=["Direct Provider Aliases"],
+)
+
+
+@direct_router.get("/market-prices", response_model=list[MarketPriceOut])
+def read_direct_market_prices(
+    commodity: str | None = Query(default=None, max_length=80),
+    state_name: str | None = Query(default=None, max_length=80),
+    district: str | None = Query(default=None, max_length=80),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return get_market_prices(
+            commodity=commodity,
+            state=state_name,
+            district=district,
+        )
+    except Exception as exc:
+        _raise_provider_http_error(exc)
+
+
+@direct_router.get("/schemes", response_model=list[SchemeOut])
+def read_direct_schemes(
+    search: str | None = Query(default=None, max_length=100),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return get_schemes(search=search)
+    except Exception as exc:
+        _raise_provider_http_error(exc)
+
+
+@direct_router.get("/weather/farm/{farm_id}", response_model=WeatherOut)
+def read_farm_weather(
+    farm_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.farm import Farm
+    from app.models.farmer import Farmer
+
+    farmer_profile = db.query(Farmer).filter(Farmer.user_id == current_user.id).first()
+    farm = None
+    if farmer_profile:
+        farm = db.query(Farm).filter(Farm.id == farm_id, Farm.farmer_id == farmer_profile.id).first()
+    lat = float(farm.latitude) if (farm and farm.latitude is not None) else 30.0363
+    lon = float(farm.longitude) if (farm and farm.longitude is not None) else 77.7518
+    return get_current_weather(lat, lon)

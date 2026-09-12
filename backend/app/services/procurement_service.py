@@ -139,8 +139,6 @@ def decide_procurement(db: Session, current_user: User, procurement_id: int, pay
         item.booking.status = BookingStatus.REJECTED
         db.commit()
         db.refresh(item)
-        from app.services.payment_service import create_payment_for_procurement
-        create_payment_for_procurement(db, item)
         return item
 
     if payload.rate_per_unit is None:
@@ -157,6 +155,8 @@ def decide_procurement(db: Session, current_user: User, procurement_id: int, pay
 
     db.commit()
     db.refresh(item)
+    from app.services.payment_service import create_payment_for_procurement
+    create_payment_for_procurement(db, item)
     return item
 
 

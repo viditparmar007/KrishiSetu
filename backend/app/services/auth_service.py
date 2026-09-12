@@ -45,7 +45,16 @@ def authenticate_user(db: Session, payload: LoginRequest) -> User:
         detail="Invalid phone number or password",
     )
 
+    # 1. Search by User.phone
     user = db.query(User).filter(User.phone == payload.phone).first()
+
+    # 2. If not found, search by Officer.employee_code
+    if not user:
+        from app.models.officer import Officer
+        officer = db.query(Officer).filter(Officer.employee_code == payload.phone).first()
+        if officer:
+            user = db.query(User).filter(User.id == officer.user_id).first()
+
     if not user or not verify_password(payload.password, user.password_hash):
         raise invalid_error
 

@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Building2, LockKeyhole, Phone, UserRound, UserPlus, X } from "lucide-react";
 import Navbar from "../components/public/Navbar";
 import FarmerDashboard from "../pages/FarmerDashboard";
+import OfficerDashboard from "../pages/OfficerDashboard";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function PublicLayout({ children }) {
+  const [sessionRole, setSessionRole] = useState(() => localStorage.getItem("krishisetu_role") || null);
+  const [dashboardOpen, setDashboardOpen] = useState(() => Boolean(localStorage.getItem("krishisetu_access_token")));
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
-  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [role, setRole] = useState("farmer");
   const [mobile, setMobile] = useState("");
   const [officerId, setOfficerId] = useState("");
@@ -48,6 +50,16 @@ function PublicLayout({ children }) {
     document.addEventListener("click", handleStoryClick);
     return () => document.removeEventListener("click", handleStoryClick);
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && loginOpen && !loginLoading && !signupLoading) {
+        closeAuth();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [loginOpen, loginLoading, signupLoading]);
 
   const closeAuth = () => {
     setLoginOpen(false);
@@ -99,17 +111,12 @@ function PublicLayout({ children }) {
 
       localStorage.setItem("krishisetu_access_token", payload.access_token);
       localStorage.setItem("krishisetu_role", payload.role);
+      setSessionRole(payload.role);
+      setDashboardOpen(true);
       setLoginOpen(false);
       setMobile("");
       setOfficerId("");
       setPassword("");
-
-      if (payload.role === "FARMER") {
-        setDashboardOpen(true);
-      } else {
-        setError("Officer authentication is not wired to the Officer ID field in the current backend yet.");
-        setLoginOpen(true);
-      }
     } catch (requestError) {
       setError(requestError.message || "Unable to connect to the server.");
     } finally {
@@ -173,10 +180,14 @@ function PublicLayout({ children }) {
   const handleLogout = () => {
     localStorage.removeItem("krishisetu_access_token");
     localStorage.removeItem("krishisetu_role");
+    setSessionRole(null);
     setDashboardOpen(false);
   };
 
   if (dashboardOpen) {
+    if (sessionRole === "OFFICER") {
+      return <OfficerDashboard onLogout={handleLogout} />;
+    }
     return <FarmerDashboard onLogout={handleLogout} />;
   }
 
@@ -208,7 +219,57 @@ function PublicLayout({ children }) {
 
               <form onSubmit={handleLogin} className="mt-5 space-y-4">
                 <div><p className="text-sm font-semibold text-[#202b23]">{role === "farmer" ? "Farmer login" : "Officer login"}</p><p className="mt-0.5 text-[11px] text-[#7a847c]">{role === "farmer" ? "Use your registered mobile number and password / PIN." : "Use your Officer ID / User ID and password / PIN."}</p></div>
-                {role === "farmer" ? <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Mobile number</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10"><Phone size={16} className="text-[#718078]" /><span className="ml-2 border-r border-[#dce3dc] pr-2.5 text-xs text-[#68736b]">+91</span><input value={mobile} onChange={(event) => setMobile(event.target.value.replace(/\D/g, "").slice(0, 10))} inputMode="numeric" autoComplete="tel" placeholder="98765 43210" className="w-full bg-transparent px-2.5 py-3 text-sm outline-none" /></div></label> : <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Officer ID / User ID</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10"><Building2 size={16} className="text-[#718078]" /><input value={officerId} onChange={(event) => setOfficerId(event.target.value)} autoComplete="username" placeholder="Enter your Officer ID / User ID" className="w-full bg-transparent px-2.5 py-3 text-sm outline-none" /></div></label>}
+                {role === "farmer" ? (
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Mobile number</span>
+                    <div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10">
+                      <Phone size={16} className="text-[#718078]" />
+                      <span className="ml-2 border-r border-[#dce3dc] pr-2.5 text-xs text-[#68736b]">+91</span>
+                      <input
+                        value={mobile}
+                        onChange={(event) => setMobile(event.target.value.replace(/\D/g, "").slice(0, 10))}
+                        inputMode="numeric"
+                        autoComplete="tel"
+                        placeholder="98765 43210"
+                        className="w-full bg-transparent px-2.5 py-3 text-sm outline-none"
+                      />
+                    </div>
+                  </label>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="block">
+                      <span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Officer ID / Employee Code / Mobile</span>
+                      <div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10">
+                        <Building2 size={16} className="text-[#718078]" />
+                        <input
+                          value={officerId}
+                          onChange={(event) => setOfficerId(event.target.value)}
+                          autoComplete="username"
+                          placeholder="e.g. OFFICER01 or 9876543210"
+                          className="w-full bg-transparent px-2.5 py-3 text-sm outline-none font-medium"
+                        />
+                      </div>
+                    </label>
+
+                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200/80 rounded-lg p-2.5 text-xs">
+                      <div>
+                        <span className="font-bold text-emerald-900">Demo Officer: </span>
+                        <span className="font-mono text-emerald-800">OFFICER01 / Officer123!</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOfficerId("OFFICER01");
+                          setPassword("Officer123!");
+                          setError("");
+                        }}
+                        className="px-2.5 py-1 text-[11px] font-bold bg-white text-emerald-700 hover:text-emerald-900 border border-emerald-300 rounded-md shadow-xs transition"
+                      >
+                        Autofill
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <label className="block"><span className="mb-1.5 block text-xs font-semibold text-[#202b23]">Password / PIN</span><div className="flex items-center rounded-lg border border-[#dce3dc] bg-[#fafcf9] px-3 focus-within:border-[#176b3e] focus-within:ring-2 focus-within:ring-[#176b3e]/10"><LockKeyhole size={16} className="text-[#718078]" /><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" placeholder="Enter password or PIN" className="w-full bg-transparent px-2.5 py-3 text-sm outline-none" /></div></label>
                 {error && <p className="text-xs font-medium text-red-600">{error}</p>}
                 <button type="submit" disabled={loginLoading} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#176b3e] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#115832] disabled:cursor-not-allowed disabled:opacity-60">{loginLoading ? "Signing in..." : `Login as ${role === "farmer" ? "Farmer" : "Officer"}`} {!loginLoading && <ArrowRight size={16} />}</button>

@@ -39,6 +39,7 @@ from app.routes import (
     recommendations,
     providers,
     simulator,
+    assistant,
 )
 
 
@@ -117,6 +118,11 @@ app.include_router(recommendations.router)
 
 app.include_router(providers.router)
 app.include_router(providers.admin_router)
+app.include_router(providers.direct_router)
 
 #phase 12
 app.include_router(simulator.router)
+
+# KrishiSetu AI Assistant
+app.include_router(assistant.router)
+
