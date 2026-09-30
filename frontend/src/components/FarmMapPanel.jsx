@@ -84,7 +84,7 @@ function calculateAreaInAcres(latLngs) {
   return area * 0.000247105;
 }
 
-export default function FarmMapPanel({ farms = [], crops = [] }) {
+export default function FarmMapPanel({ farms = [], crops = [], compact = false }) {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const tileLayerRef = useRef(null);
@@ -343,7 +343,7 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
     map.panBy([dx, dy], { animate: true, duration: 0.35 });
   }, []);
 
-  // Render ONLY user-saved or configured agricultural zones (matching Image 2)
+  // Render ONLY user-saved or configured agricultural zones and active farm crops
   useEffect(() => {
     const map = mapRef.current;
     const boundaryGroup = boundaryLayerRef.current;
@@ -352,64 +352,116 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
     boundaryGroup.clearLayers();
 
     const savedKeys = Object.keys(savedBoundaries);
-    if (savedKeys.length === 0) return;
+    if (savedKeys.length > 0) {
+      savedKeys.forEach((plotKey) => {
+        const plotData = savedBoundaries[plotKey];
+        if (!plotData || !plotData.points || plotData.points.length < 3) return;
 
-    savedKeys.forEach((plotKey) => {
-      const plotData = savedBoundaries[plotKey];
-      if (!plotData || !plotData.points || plotData.points.length < 3) return;
+        const color = plotData.color || "#22c55e";
 
-      const color = plotData.color || "#22c55e";
+        // Draw Polygon fitting agricultural land
+        const polygon = L.polygon(plotData.points, {
+          color: color,
+          weight: 2.5,
+          fillColor: color,
+          fillOpacity: 0.22,
+        }).addTo(boundaryGroup);
 
-      // Draw Polygon fitting agricultural land
-      const polygon = L.polygon(plotData.points, {
-        color: color,
-        weight: 2.5,
-        fillColor: color,
-        fillOpacity: 0.22,
-      }).addTo(boundaryGroup);
+        // Tooltip with crop and area
+        polygon.bindTooltip(
+          `<strong>${plotData.zone || plotData.name}</strong><br/>Crop: ${plotData.crop}<br/>Area: ${plotData.area}`,
+          { permanent: false, direction: "center" }
+        );
 
-      // Tooltip with crop and area
-      polygon.bindTooltip(
-        `<strong>${plotData.zone || plotData.name}</strong><br/>Crop: ${plotData.crop}<br/>Area: ${plotData.area}`,
-        { permanent: false, direction: "center" }
-      );
+        // Center pill badge matching user's reference image 2
+        const center = plotData.center || plotData.points[0];
+        const badgeIcon = L.divIcon({
+          className: "ks-crop-badge",
+          iconSize: [140, 32],
+          iconAnchor: [70, 16],
+          html: `
+            <div style="
+              background: rgba(255, 255, 255, 0.95);
+              border: 1.5px solid ${color};
+              border-radius: 9999px;
+              padding: 4px 12px;
+              color: #1a3826;
+              font-family: system-ui, -apple-system, sans-serif;
+              font-size: 11px;
+              font-weight: 800;
+              white-space: nowrap;
+              box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              cursor: pointer;
+            ">
+              <span>${plotData.icon || "🌱"}</span>
+              <span>${plotData.zone || plotData.name}</span>
+            </div>
+          `,
+        });
 
-      // Center pill badge matching user's reference image 2
-      const center = plotData.center || plotData.points[0];
-      const badgeIcon = L.divIcon({
-        className: "ks-crop-badge",
-        iconSize: [140, 32],
-        iconAnchor: [70, 16],
-        html: `
-          <div style="
-            background: rgba(255, 255, 255, 0.95);
-            border: 1.5px solid ${color};
-            border-radius: 9999px;
-            padding: 4px 12px;
-            color: #1a3826;
-            font-family: system-ui, -apple-system, sans-serif;
-            font-size: 11px;
-            font-weight: 800;
-            white-space: nowrap;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-          ">
-            <span>${plotData.icon || "🌱"}</span>
-            <span>${plotData.zone || plotData.name}</span>
-          </div>
-        `,
+        const marker = L.marker(center, { icon: badgeIcon }).addTo(boundaryGroup);
+        marker.on("click", () => {
+          map.flyTo(center, 18, { animate: true, duration: 0.8 });
+          setStatusMsg(`🌾 ${plotData.zone || plotData.name} (${plotData.crop} • ${plotData.area})`);
+        });
       });
+    }
 
-      const marker = L.marker(center, { icon: badgeIcon }).addTo(boundaryGroup);
-      marker.on("click", () => {
-        map.flyTo(center, 18, { animate: true, duration: 0.8 });
-        setStatusMsg(`🌾 ${plotData.zone || plotData.name} (${plotData.crop} • ${plotData.area})`);
+    // Render active crops on the map
+    if (crops && crops.length > 0) {
+      crops.forEach((crop, idx) => {
+        const cropName = crop.crop_name || "Crop";
+        const icon = cropName.toLowerCase().includes("rice") || cropName.toLowerCase().includes("धान") || cropName.toLowerCase().includes("चावल")
+          ? "🌾"
+          : cropName.toLowerCase().includes("sugar") || cropName.toLowerCase().includes("गन्ना")
+          ? "🎋"
+          : "🌽";
+
+        const baseCenter = savedFarmCenter || CHHUTMALPUR_CENTER;
+        const cropLat = baseCenter[0] + (idx * 0.001);
+        const cropLng = baseCenter[1] + (idx * 0.001);
+
+        const cropBadge = L.divIcon({
+          className: "ks-live-crop-badge",
+          iconSize: [160, 34],
+          iconAnchor: [80, 17],
+          html: `
+            <div style="
+              background: #ffffff;
+              border: 2px solid #16804b;
+              border-radius: 9999px;
+              padding: 4px 12px;
+              color: #0e2618;
+              font-family: system-ui, -apple-system, sans-serif;
+              font-size: 11px;
+              font-weight: 900;
+              white-space: nowrap;
+              box-shadow: 0 4px 14px rgba(22,128,75,0.25);
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              cursor: pointer;
+            ">
+              <span style="font-size:14px;">${icon}</span>
+              <span>${cropName}</span>
+              <span style="background:#eaf7ee;color:#16804b;font-size:9px;padding:2px 5px;border-radius:6px;font-weight:800;">
+                ${crop.expected_quantity ? `${crop.expected_quantity} Q` : "Active"}
+              </span>
+            </div>
+          `,
+        });
+
+        const cropMarker = L.marker([cropLat, cropLng], { icon: cropBadge }).addTo(boundaryGroup);
+        cropMarker.on("click", () => {
+          map.flyTo([cropLat, cropLng], 18, { animate: true, duration: 0.8 });
+          setStatusMsg(`🌾 ${cropName}: ${crop.expected_quantity || ""} ${crop.quantity_unit || "quintal"} • Active Farm Crop`);
+        });
       });
-    });
-  }, [savedBoundaries]);
+    }
+  }, [savedBoundaries, crops, savedFarmCenter]);
 
   // Click on map to add boundary points or pinpoint location
   useEffect(() => {
@@ -589,7 +641,7 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
   };
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-white/85 bg-[#0e2417] shadow-inner select-none min-h-[420px]">
+    <div className={`isolate relative z-0 h-full w-full overflow-hidden rounded-[22px] border border-white/85 bg-[#0e2417] shadow-inner select-none ${compact ? "min-h-[280px]" : "min-h-[420px]"}`}>
       <style>{`
         @keyframes ks-gmap-pulse {
           0% { transform: scale(0.6); opacity: 0.9; }
@@ -605,12 +657,12 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
         }
       `}</style>
 
-      {/* Top Left: Mode Selector (Matching User Reference Image 2: [Map] [Satellite] [3D View]) */}
-      <div className="absolute left-3 top-3 z-[500] flex items-center rounded-full border border-white/90 bg-white/90 p-1 shadow-xl backdrop-blur-md">
+      {/* Top Left: Mode Selector (Map, Satellite, 3D View) */}
+      <div className={`absolute ${compact ? "left-2.5 top-2.5 p-0.5 z-10" : "left-3 top-3 p-1 z-[500]"} flex items-center rounded-full border border-white/90 bg-white/90 shadow-xl backdrop-blur-md`}>
         <button
           type="button"
           onClick={() => handleSelectMode("map")}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+          className={`rounded-full ${compact ? "px-2.5 py-1 text-[11px]" : "px-3.5 py-1.5 text-xs"} font-bold transition-all ${
             mapMode === "map" && !is3D
               ? "bg-[#176b3e] text-white shadow-md font-black"
               : "text-[#2e4d3b] hover:text-[#176b3e]"
@@ -622,7 +674,7 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
         <button
           type="button"
           onClick={() => handleSelectMode("satellite")}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+          className={`rounded-full ${compact ? "px-2.5 py-1 text-[11px]" : "px-3.5 py-1.5 text-xs"} font-bold transition-all ${
             mapMode === "satellite" && !is3D
               ? "bg-[#176b3e] text-white shadow-md font-black"
               : "text-[#2e4d3b] hover:text-[#176b3e]"
@@ -634,7 +686,7 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
         <button
           type="button"
           onClick={() => handleSelectMode("3d")}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-all ${
+          className={`rounded-full ${compact ? "px-2.5 py-1 text-[11px]" : "px-3.5 py-1.5 text-xs"} font-bold transition-all ${
             is3D
               ? "bg-[#176b3e] text-white shadow-md font-black"
               : "text-[#2e4d3b] hover:text-[#176b3e]"
@@ -645,39 +697,41 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
       </div>
 
       {/* Top Center: Location Quick-Jump Pills (Chhutmalpur / Live GPS / Search) */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-3 z-[480] hidden sm:flex items-center gap-1.5 rounded-full border border-white/80 bg-white/90 px-2 py-1 shadow-lg backdrop-blur-md">
-        <button
-          type="button"
-          onClick={jumpToChhutmalpur}
-          className="flex items-center gap-1 rounded-full bg-[#edf7ee] px-3 py-1 text-[11px] font-extrabold text-[#176b3e] hover:bg-[#d8edd9] transition"
-          title="Go to Chhutmalpur Farm"
-        >
-          <MapPin size={12} />
-          <span>📍 Chhutmalpur (Mera Khet)</span>
-        </button>
+      {!compact && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-3 z-[480] hidden sm:flex items-center gap-1.5 rounded-full border border-white/80 bg-white/90 px-2 py-1 shadow-lg backdrop-blur-md">
+          <button
+            type="button"
+            onClick={jumpToChhutmalpur}
+            className="flex items-center gap-1 rounded-full bg-[#edf7ee] px-3 py-1 text-[11px] font-extrabold text-[#176b3e] hover:bg-[#d8edd9] transition"
+            title="Go to Chhutmalpur Farm"
+          >
+            <MapPin size={12} />
+            <span>📍 Chhutmalpur (Mera Khet)</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => detectLocation(false)}
-          className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-[#1a73e8] hover:bg-[#eef4fd] transition"
-          title="Detect Live GPS Location"
-        >
-          <LocateFixed size={12} />
-          <span>Live GPS</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => detectLocation(false)}
+            className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-[#1a73e8] hover:bg-[#eef4fd] transition"
+            title="Detect Live GPS Location"
+          >
+            <LocateFixed size={12} />
+            <span>Live GPS</span>
+          </button>
 
-        <button
-          type="button"
-          data-map-search="true"
-          onClick={() => setShowSearch(!showSearch)}
-          className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-[#5a7263] hover:bg-black/5 transition"
-        >
-          <Search size={12} />
-        </button>
-      </div>
+          <button
+            type="button"
+            data-map-search="true"
+            onClick={() => setShowSearch(!showSearch)}
+            className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold text-[#5a7263] hover:bg-black/5 transition"
+          >
+            <Search size={12} />
+          </button>
+        </div>
+      )}
 
       {/* Top Center Dropdown Search Bar */}
-      {showSearch && (
+      {!compact && showSearch && (
         <form
           data-map-search="true"
           onSubmit={handleSearchLocation}
@@ -702,16 +756,16 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
         </form>
       )}
 
-      {/* Right Side Floating Vertical Action Buttons (Matching User Reference Image 2) */}
-      <div className="absolute right-3 top-3 z-[500] flex flex-col items-center gap-2">
+      {/* Right Side Floating Vertical Action Buttons */}
+      <div className={`absolute ${compact ? "right-2.5 top-2.5 gap-1.5 z-10" : "right-3 top-3 gap-2 z-[500]"} flex flex-col items-center`}>
         {/* Layer Toggle Button (Satellite <-> Map) */}
         <button
           type="button"
           onClick={() => setMapMode((m) => (m === "map" ? "satellite" : "map"))}
           title="Toggle Layers"
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95"
+          className={`flex ${compact ? "h-8 w-8 rounded-xl" : "h-10 w-10 rounded-2xl"} items-center justify-center border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95`}
         >
-          <Layers size={18} />
+          <Layers size={compact ? 15 : 18} />
         </button>
 
         {/* Live GPS Locate Me Button */}
@@ -720,60 +774,64 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
           onClick={() => detectLocation(false)}
           disabled={locating}
           title="Google Map की तरह अपनी लोकेशन देखें"
-          className={`flex h-10 w-10 items-center justify-center rounded-2xl border border-white/90 bg-white/95 shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95 ${
+          className={`flex ${compact ? "h-8 w-8 rounded-xl" : "h-10 w-10 rounded-2xl"} items-center justify-center border border-white/90 bg-white/95 shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95 ${
             locating ? "animate-spin text-[#1a73e8]" : "text-[#176b3e]"
           }`}
         >
-          <LocateFixed size={18} className={currentLocation ? "text-[#1a73e8]" : "text-[#176b3e]"} />
+          <LocateFixed size={compact ? 15 : 18} className={currentLocation ? "text-[#1a73e8]" : "text-[#176b3e]"} />
         </button>
 
-        {/* Draw Boundary / Measure Button (Pencil Icon) */}
-        <button
-          type="button"
-          onClick={startEditingBoundary}
-          title="खेत की बाउंड्री मार्क करें"
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95"
-        >
-          <Pencil size={17} />
-        </button>
+        {/* Draw Boundary / Measure Button (Pencil Icon) - shown in full view */}
+        {!compact && (
+          <button
+            type="button"
+            onClick={startEditingBoundary}
+            title="खेत की बाउंड्री मार्क करें"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95"
+          >
+            <Pencil size={17} />
+          </button>
+        )}
       </div>
 
-      {/* Bottom Right: Zoom & Compass Controls (Matching User Reference Image 2) */}
-      <div className="absolute right-3 bottom-12 z-[500] flex flex-col items-center gap-2">
+      {/* Bottom Right: Zoom & Compass Controls */}
+      <div className={`absolute ${compact ? "right-2.5 bottom-2.5 gap-1.5 z-10" : "right-3 bottom-12 gap-2 z-[500]"} flex flex-col items-center`}>
         {/* Vertical Zoom Control Pill */}
         <div className="flex flex-col items-center rounded-2xl border border-white/90 bg-white/95 shadow-xl backdrop-blur-md overflow-hidden">
           <button
             type="button"
             onClick={() => handleZoom(1)}
             title="Zoom In"
-            className="flex h-9 w-9 items-center justify-center text-[#244633] transition hover:bg-[#edf5ee] active:scale-95"
+            className={`flex ${compact ? "h-7 w-7" : "h-9 w-9"} items-center justify-center text-[#244633] transition hover:bg-[#edf5ee] active:scale-95`}
           >
-            <Plus size={16} />
+            <Plus size={compact ? 13 : 16} />
           </button>
-          <div className="h-px w-6 bg-[#e1ece3]" />
+          <div className="h-px w-5 bg-[#e1ece3]" />
           <button
             type="button"
             onClick={() => handleZoom(-1)}
             title="Zoom Out"
-            className="flex h-9 w-9 items-center justify-center text-[#244633] transition hover:bg-[#edf5ee] active:scale-95"
+            className={`flex ${compact ? "h-7 w-7" : "h-9 w-9"} items-center justify-center text-[#244633] transition hover:bg-[#edf5ee] active:scale-95`}
           >
-            <Minus size={16} />
+            <Minus size={compact ? 13 : 16} />
           </button>
         </div>
 
         {/* Compass Needle Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setBearing(0);
-            mapRef.current?.setView(mapRef.current.getCenter(), mapRef.current.getZoom());
-          }}
-          title="Reset North"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95"
-          style={{ transform: `rotate(${-bearing}deg)` }}
-        >
-          <Compass size={17} className="text-[#c73b3b]" />
-        </button>
+        {!compact && (
+          <button
+            type="button"
+            onClick={() => {
+              setBearing(0);
+              mapRef.current?.setView(mapRef.current.getCenter(), mapRef.current.getZoom());
+            }}
+            title="Reset North"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/90 bg-white/95 text-[#244633] shadow-xl backdrop-blur-md transition hover:scale-105 active:scale-95"
+            style={{ transform: `rotate(${-bearing}deg)` }}
+          >
+            <Compass size={17} className="text-[#c73b3b]" />
+          </button>
+        )}
       </div>
 
       {/* 3D Perspective Stage Container */}
@@ -796,24 +854,24 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
 
       {/* 3D Camera Controls HUD (Visible only in 3D mode) */}
       {is3D && (
-        <div className="absolute right-14 bottom-12 z-[500] flex flex-col items-center gap-1.5 rounded-2xl border border-white/90 bg-[#0e2b1c]/90 p-2 text-white shadow-2xl backdrop-blur-md">
-          <p className="text-[9px] font-black text-[#48d982]">3D CAMERA</p>
+        <div className={`absolute ${compact ? "right-11 bottom-2.5 p-1 text-[8px]" : "right-14 bottom-12 p-2"} z-[500] flex flex-col items-center gap-1 rounded-2xl border border-white/90 bg-[#0e2b1c]/90 text-white shadow-2xl backdrop-blur-md`}>
+          <p className="text-[8px] font-black text-[#48d982]">3D CAM</p>
           <button
             type="button"
             onClick={() => pan3DCamera(0, -90)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/30 active:scale-95"
+            className="flex h-6 w-6 items-center justify-center rounded bg-white/15 hover:bg-white/30 active:scale-95"
             title="Pan North"
           >
-            <ArrowUp size={14} />
+            <ArrowUp size={12} />
           </button>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => pan3DCamera(-90, 0)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/30 active:scale-95"
+              className="flex h-6 w-6 items-center justify-center rounded bg-white/15 hover:bg-white/30 active:scale-95"
               title="Pan West"
             >
-              <ArrowLeft size={14} />
+              <ArrowLeft size={12} />
             </button>
             <button
               type="button"
@@ -821,7 +879,7 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
                 setBearing(0);
                 setPitch(45);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#48d982] text-[#0f2e1e] font-black text-[10px]"
+              className="flex h-6 w-6 items-center justify-center rounded bg-[#48d982] text-[#0f2e1e] font-black text-[9px]"
               title="Reset 3D Center"
             >
               3D
@@ -829,63 +887,53 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
             <button
               type="button"
               onClick={() => pan3DCamera(90, 0)}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/30 active:scale-95"
+              className="flex h-6 w-6 items-center justify-center rounded bg-white/15 hover:bg-white/30 active:scale-95"
               title="Pan East"
             >
-              <ArrowRight size={14} />
+              <ArrowRight size={12} />
             </button>
           </div>
           <button
             type="button"
             onClick={() => pan3DCamera(0, 90)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/15 hover:bg-white/30 active:scale-95"
+            className="flex h-6 w-6 items-center justify-center rounded bg-white/15 hover:bg-white/30 active:scale-95"
             title="Pan South"
           >
-            <ArrowDown size={14} />
+            <ArrowDown size={12} />
           </button>
-          <div className="mt-1 flex items-center gap-1 border-t border-white/20 pt-1.5 text-[9px]">
-            <button
-              type="button"
-              onClick={() => setPitch((p) => Math.min(p + 8, 65))}
-              className="rounded bg-white/15 px-1.5 py-0.5 hover:bg-white/30"
-            >
-              Tilt +
-            </button>
-            <button
-              type="button"
-              onClick={() => setPitch((p) => Math.max(p - 8, 20))}
-              className="rounded bg-white/15 px-1.5 py-0.5 hover:bg-white/30"
-            >
-              Tilt -
-            </button>
-          </div>
         </div>
       )}
 
-      {/* Bottom Left: Action bar (Set My Farm Location & Draw Field Boundary) */}
-      <div className="absolute bottom-3 left-3 z-[500] flex flex-wrap items-center gap-2">
-        {!editingBoundary ? (
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={saveCurrentCenterAsFarm}
-              className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/95 px-3.5 py-2 text-xs font-black text-[#176b3e] shadow-xl backdrop-blur-md transition hover:bg-[#edf8f1] active:scale-95"
-              title="Save current view as your permanent farm center"
-            >
-              <CheckCircle2 size={13} className="text-[#176b3e]" />
-              <span>📌 यहाँ मेरा खेत सेट करें (Set Farm Location)</span>
-            </button>
+      {/* Bottom Left: Action bar / Indicator */}
+      {compact ? (
+        <div className="absolute bottom-2.5 left-2.5 z-10 flex items-center gap-1.5 rounded-full border border-white/90 bg-white/95 px-3 py-1 text-[11px] font-extrabold text-[#176b3e] shadow-md backdrop-blur-md">
+          <MapPin size={12} />
+          <span>{currentLocation ? "Live GPS" : "Chhutmalpur, Saharanpur"}</span>
+        </div>
+      ) : (
+        <div className="absolute bottom-3 left-3 z-[500] flex flex-wrap items-center gap-2">
+          {!editingBoundary ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={saveCurrentCenterAsFarm}
+                className="flex items-center gap-1.5 rounded-full border border-white/90 bg-white/95 px-3.5 py-2 text-xs font-black text-[#176b3e] shadow-xl backdrop-blur-md transition hover:bg-[#edf8f1] active:scale-95"
+                title="Save current view as your permanent farm center"
+              >
+                <CheckCircle2 size={13} className="text-[#176b3e]" />
+                <span>📌 यहाँ मेरा खेत सेट करें (Set Farm Location)</span>
+              </button>
 
-            <button
-              type="button"
-              onClick={jumpToChhutmalpur}
-              className="sm:hidden flex items-center gap-1 rounded-full bg-[#176b3e] px-3 py-2 text-xs font-black text-white shadow-xl"
-            >
-              <MapPin size={12} />
-              <span>Chhutmalpur</span>
-            </button>
-          </div>
-        ) : (
+              <button
+                type="button"
+                onClick={jumpToChhutmalpur}
+                className="sm:hidden flex items-center gap-1 rounded-full bg-[#176b3e] px-3 py-2 text-xs font-black text-white shadow-xl"
+              >
+                <MapPin size={12} />
+                <span>Chhutmalpur</span>
+              </button>
+            </div>
+          ) : (
           <div className="flex flex-col gap-2 rounded-2xl border-2 border-[#176b3e] bg-white p-3 shadow-2xl backdrop-blur-md sm:flex-row sm:items-center">
             {/* Choose Crop for Boundary */}
             <div className="flex items-center gap-2">
@@ -957,9 +1005,10 @@ export default function FarmMapPanel({ farms = [], crops = [] }) {
           </div>
         )}
       </div>
+    )}
 
       {/* Bottom Center: Status Bar */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[480] max-w-[340px] truncate rounded-full border border-white/85 bg-white/95 px-3.5 py-1 text-[11px] font-semibold text-[#2b4837] shadow-xl backdrop-blur-md">
+      <div className={`absolute bottom-3 left-1/2 -translate-x-1/2 ${compact ? "z-10" : "z-[480]"} max-w-[340px] truncate rounded-full border border-white/85 bg-white/95 px-3.5 py-1 text-[11px] font-semibold text-[#2b4837] shadow-xl backdrop-blur-md`}>
         <div className="flex items-center gap-1.5">
           {locating ? (
             <span className="h-2 w-2 rounded-full bg-[#1a73e8] animate-ping" />

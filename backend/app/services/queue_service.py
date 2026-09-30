@@ -239,6 +239,8 @@ def get_officer_queue(db: Session, current_user: User, queue_date: date):
             "queue_number": e.queue_number,
             "queue_date": e.queue_date,
             "status": e.status,
+            "farmer_name": e.booking.farmer.name if (e.booking and e.booking.farmer) else "Farmer",
+            "farmer_phone": e.booking.farmer.user.phone if (e.booking and e.booking.farmer and e.booking.farmer.user) else "",
             "checked_in_at": e.checked_in_at,
             "called_at": e.called_at,
             "processing_started_at": e.processing_started_at,
@@ -318,14 +320,156 @@ def mark_queue_no_show(db: Session, current_user: User, queue_entry_id: int):
     db.commit()
     db.refresh(entry)
     return entry
-    create_notification(
-    db=db,
-    user_id=next_entry.booking.farmer.user_id,
-    notification_type=NotificationType.QUEUE,
-    title="Your token has been called",
-    message=f"Token {next_entry.booking.token} is now being served.",
-    entity_type="booking",
-    entity_id=next_entry.booking_id,
-)
+
+
+def officer_check_in_booking(db: Session, current_user: User, booking_id: int):
+    officer = get_officer_for_user(db, current_user)
+    booking = db.query(Booking).filter(
+        Booking.id == booking_id,
+        Booking.centre_id == officer.centre_id,
+    ).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found for this centre")
+
+    existing = db.query(QueueEntry).filter(QueueEntry.booking_id == booking.id).first()
+    if existing:
+        return existing
+
+    today = date.today()
+    entry = QueueEntry(
+        booking_id=booking.id,
+        farmer_id=booking.farmer_id,
+        centre_id=booking.centre_id,
+        slot_id=booking.slot_id,
+        queue_date=today,
+        queue_number=get_next_queue_number(db, booking.centre_id, today),
+        status=QueueStatus.WAITING,
+    )
+    booking.status = BookingStatus.CHECKED_IN
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
+
+
+def create_officer_manual_entry(db: Session, current_user: User, payload):
+    from datetime import time
+    from app.models.farmer import Farmer
+    from app.models.crop import Crop
+    from app.models.farm import Farm
+    from app.models.slot import Slot
+    from app.models.user import User as AppUser
+    from app.models.enums import UserRole
+    from app.utils.security import hash_password
+
+    officer = get_officer_for_user(db, current_user)
+    today = date.today()
+
+    phone = payload.farmer_phone.strip()
+    user = db.query(AppUser).filter(AppUser.phone == phone).first()
+    if not user:
+        user = AppUser(
+            phone=phone,
+            password_hash=hash_password("Farmer@123"),
+            role=UserRole.FARMER,
+            is_active=True,
+        )
+        db.add(user)
+        db.flush()
+
+    farmer = db.query(Farmer).filter(Farmer.user_id == user.id).first()
+    if not farmer:
+        farmer = Farmer(
+            user_id=user.id,
+            name=payload.farmer_name.strip(),
+            state=officer.centre.state if officer.centre else "Uttar Pradesh",
+            district=officer.centre.district if officer.centre else "Saharanpur",
+            village=payload.village or "Local Village",
+        )
+        db.add(farmer)
+        db.flush()
+
+    farm = db.query(Farm).filter(Farm.farmer_id == farmer.id).first()
+    if not farm:
+        farm = Farm(
+            farmer_id=farmer.id,
+            farm_name="Main Farm",
+            state=farmer.state,
+            district=farmer.district,
+            village=farmer.village,
+            area=5.0,
+            area_unit="acre",
+        )
+        db.add(farm)
+        db.flush()
+
+    from app.models.enums import CropStatus
+    crop = db.query(Crop).filter(
+        Crop.farm_id == farm.id,
+        Crop.crop_name.ilike(payload.crop_name.strip())
+    ).first()
+    if not crop:
+        crop = Crop(
+            farm_id=farm.id,
+            crop_name=payload.crop_name.strip(),
+            season="Current",
+            expected_quantity=payload.declared_quantity,
+            quantity_unit=payload.quantity_unit,
+            status=CropStatus.HARVEST_READY,
+        )
+        db.add(crop)
+        db.flush()
+
+    from app.models.enums import SlotStatus
+    slot = db.query(Slot).filter(
+        Slot.centre_id == officer.centre_id,
+        Slot.slot_date == today,
+    ).first()
+    if not slot:
+        slot = Slot(
+            centre_id=officer.centre_id,
+            slot_date=today,
+            start_time=time(9, 0),
+            end_time=time(18, 0),
+            max_farmer_capacity=100,
+            max_quantity_capacity=5000.0,
+            booked_farmer_count=1,
+            booked_quantity=payload.declared_quantity,
+            status=SlotStatus.OPEN,
+        )
+        db.add(slot)
+        db.flush()
+    else:
+        slot.booked_farmer_count += 1
+        slot.booked_quantity += payload.declared_quantity
+
+    next_num = get_next_queue_number(db, officer.centre_id, today)
+    token_code = f"T-{next_num:03d}"
+    booking = Booking(
+        farmer_id=farmer.id,
+        crop_id=crop.id,
+        centre_id=officer.centre_id,
+        slot_id=slot.id,
+        token=token_code,
+        declared_quantity=payload.declared_quantity,
+        quantity_unit=payload.quantity_unit,
+        status=BookingStatus.CHECKED_IN,
+    )
+    db.add(booking)
+    db.flush()
+
+    entry = QueueEntry(
+        booking_id=booking.id,
+        farmer_id=farmer.id,
+        centre_id=officer.centre_id,
+        slot_id=slot.id,
+        queue_date=today,
+        queue_number=next_num,
+        status=QueueStatus.WAITING,
+    )
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return entry
 
 

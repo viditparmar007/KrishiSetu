@@ -66,8 +66,19 @@ class OfficerQueueItemOut(BaseModel):
     queue_number: int
     queue_date: date
     status: QueueStatus
+    farmer_name: str | None = None
+    farmer_phone: str | None = None
     checked_in_at: datetime
     called_at: datetime | None
     processing_started_at: datetime | None
     completed_at: datetime | None
     no_show_at: datetime | None
+
+
+class OfficerManualEntryCreate(BaseModel):
+    farmer_name: str
+    farmer_phone: str
+    crop_name: str
+    declared_quantity: float = 10.0
+    quantity_unit: str = "quintal"
+    village: str = "Local Village"

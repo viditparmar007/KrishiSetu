@@ -3,12 +3,13 @@ import { ArrowRight, Building2, LockKeyhole, Phone, UserRound, UserPlus, X } fro
 import Navbar from "../components/public/Navbar";
 import FarmerDashboard from "../pages/FarmerDashboard";
 import OfficerDashboard from "../pages/OfficerDashboard";
+import { getAuthToken, getAuthRole, setAuthSession, clearAuthSession } from "../utils/authStorage";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function PublicLayout({ children }) {
-  const [sessionRole, setSessionRole] = useState(() => localStorage.getItem("krishisetu_role") || null);
-  const [dashboardOpen, setDashboardOpen] = useState(() => Boolean(localStorage.getItem("krishisetu_access_token")));
+  const [sessionRole, setSessionRole] = useState(() => getAuthRole());
+  const [dashboardOpen, setDashboardOpen] = useState(() => Boolean(getAuthToken()));
   const [loginOpen, setLoginOpen] = useState(false);
   const [signupOpen, setSignupOpen] = useState(false);
   const [role, setRole] = useState("farmer");
@@ -109,8 +110,7 @@ function PublicLayout({ children }) {
         throw new Error(payload.detail || "Login failed. Check your credentials.");
       }
 
-      localStorage.setItem("krishisetu_access_token", payload.access_token);
-      localStorage.setItem("krishisetu_role", payload.role);
+      setAuthSession(payload.access_token, payload.role);
       setSessionRole(payload.role);
       setDashboardOpen(true);
       setLoginOpen(false);
@@ -178,8 +178,7 @@ function PublicLayout({ children }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("krishisetu_access_token");
-    localStorage.removeItem("krishisetu_role");
+    clearAuthSession();
     setSessionRole(null);
     setDashboardOpen(false);
   };

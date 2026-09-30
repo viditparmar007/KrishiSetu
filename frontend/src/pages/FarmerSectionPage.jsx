@@ -35,7 +35,7 @@ function FormModal({ title, onClose, children, wide = false }) {
   );
 }
 
-export default function FarmerSectionPage({ section, farms = [], crops = [], onBack }) {
+export default function FarmerSectionPage({ section, farms = [], crops = [], onBack, onRefreshData }) {
   const [items, setItems] = useState([]);
   const [centres, setCentres] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -55,8 +55,26 @@ export default function FarmerSectionPage({ section, farms = [], crops = [], onB
   const load = async () => {
     setLoading(true); setError("");
     try {
-      if (section === "My Farms") { setItems(farms); return; }
-      if (section === "My Crops") { setItems(crops); return; }
+      if (section === "My Farms") {
+        try {
+          const res = await farmerApi.farms();
+          const listData = Array.isArray(res.data) ? res.data : res.data?.items || [];
+          setItems(listData);
+        } catch {
+          setItems(farms);
+        }
+        return;
+      }
+      if (section === "My Crops") {
+        try {
+          const res = await farmerApi.crops();
+          const listData = Array.isArray(res.data) ? res.data : res.data?.items || [];
+          setItems(listData);
+        } catch {
+          setItems(crops);
+        }
+        return;
+      }
       if (section === "Find Centre") {
         const [centreResult, recommendationResult] = await Promise.all([farmerApi.centres(), farmerApi.recommendations(8)]);
         setCentres(list(centreResult.data));
@@ -124,21 +142,49 @@ export default function FarmerSectionPage({ section, farms = [], crops = [], onB
         latitude: farmForm.latitude === "" ? null : Number(farmForm.latitude),
         longitude: farmForm.longitude === "" ? null : Number(farmForm.longitude),
       });
-      setModal(null); await load();
+      setModal(null);
+      await load();
+      onRefreshData?.();
     } catch (e) { setError(errText(e)); } finally { setBusy(false); }
   };
 
   const saveCrop = async (event) => {
     event.preventDefault(); setBusy(true); setError("");
+    let targetFarmId = cropForm.farm_id || (farms.length > 0 ? String(farms[0].id) : "");
+    const name = cropForm.crop_name.trim();
+    if (!name) {
+      setError("Please enter crop name.");
+      setBusy(false);
+      return;
+    }
     try {
-      await farmerApi.createCrop(cropForm.farm_id, {
-        ...cropForm,
-        expected_quantity: Number(cropForm.expected_quantity),
-        season: cropForm.season || null,
-        sowing_date: cropForm.sowing_date || null,
+      if (!targetFarmId) {
+        const farmRes = await farmerApi.createFarm({
+          farm_name: `${name} Farm`,
+          state: "Uttar Pradesh",
+          district: "Saharanpur",
+          village: "Chhutmalpur",
+          area: 5,
+          area_unit: "acre",
+          irrigation_type: "Tube Well",
+          latitude: 30.0363,
+          longitude: 77.7518,
+        });
+        targetFarmId = String(farmRes.data.id);
+      }
+
+      await farmerApi.createCrop(targetFarmId, {
+        crop_name: name,
+        expected_quantity: Number(cropForm.expected_quantity) || 10,
+        quantity_unit: cropForm.quantity_unit || "quintal",
+        season: cropForm.season || "Kharif",
+        sowing_date: cropForm.sowing_date || new Date().toISOString().split("T")[0],
         expected_harvest_date: cropForm.expected_harvest_date || null,
+        status: cropForm.status || "GROWING",
       });
-      setModal(null); await load();
+      setModal(null);
+      await load();
+      onRefreshData?.();
     } catch (e) { setError(errText(e)); } finally { setBusy(false); }
   };
 
@@ -165,28 +211,29 @@ export default function FarmerSectionPage({ section, farms = [], crops = [], onB
     try {
       await farmerApi.createBooking({ crop_id: Number(booking.crop_id), slot_id: Number(booking.slot_id), declared_quantity: Number(booking.declared_quantity) });
       setSelectedCentre(null); setModal("booked");
+      onRefreshData?.();
     } catch (e) { setError(errText(e)); } finally { setBusy(false); }
   };
 
   const checkIn = async (bookingId) => {
     setBusy(true); setError("");
-    try { await farmerApi.checkIn(bookingId); await load(); } catch (e) { setError(errText(e)); } finally { setBusy(false); }
+    try { await farmerApi.checkIn(bookingId); await load(); onRefreshData?.(); } catch (e) { setError(errText(e)); } finally { setBusy(false); }
   };
 
   const markRead = async (id) => {
-    try { await farmerApi.markNotificationRead(id); await load(); } catch (e) { setError(errText(e)); }
+    try { await farmerApi.markNotificationRead(id); await load(); onRefreshData?.(); } catch (e) { setError(errText(e)); }
   };
 
   const deleteFarm = async (farm) => {
     if (!window.confirm(`Delete farm "${farm.farm_name}"? This cannot be undone.`)) return;
     setDeletingId(`farm-${farm.id}`); setError("");
-    try { await farmerApi.deleteFarm(farm.id); await load(); } catch (e) { setError(errText(e)); } finally { setDeletingId(null); }
+    try { await farmerApi.deleteFarm(farm.id); await load(); onRefreshData?.(); } catch (e) { setError(errText(e)); } finally { setDeletingId(null); }
   };
 
   const deleteCrop = async (crop) => {
     if (!window.confirm(`Delete crop "${crop.crop_name}"? This cannot be undone.`)) return;
     setDeletingId(`crop-${crop.id}`); setError("");
-    try { await farmerApi.deleteCrop(crop.id); await load(); } catch (e) { setError(errText(e)); } finally { setDeletingId(null); }
+    try { await farmerApi.deleteCrop(crop.id); await load(); onRefreshData?.(); } catch (e) { setError(errText(e)); } finally { setDeletingId(null); }
   };
 
   const mergedCentres = useMemo(() => {
@@ -219,14 +266,68 @@ export default function FarmerSectionPage({ section, farms = [], crops = [], onB
 
       {section === "My Farms" && <>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-extrabold">My Farms</h2><p className="mt-1 text-sm text-[#718078]">Manage the farms used by recommendations, weather and the map.</p></div><button type="button" onClick={() => { setError(""); setFarmForm({ farm_name: "", state: "", district: "", village: "", area: "", area_unit: "acre", irrigation_type: "", latitude: "", longitude: "" }); setModal("farm"); }} className="inline-flex items-center gap-2 rounded-xl bg-[#176b3e] px-4 py-2.5 text-sm font-bold text-white"><span>＋</span>Add farm</button></div>
-        <div className="grid gap-4 md:grid-cols-2">{farms.map((farm) => <Card key={farm.id}><div className="flex items-start justify-between"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf7ee] text-[#176b3e]"><Tractor size={21}/></span><div className="flex items-center gap-2"><span className="text-xs font-bold text-[#176b3e]">Farm #{farm.id}</span><button type="button" onClick={() => deleteFarm(farm)} disabled={deletingId === `farm-${farm.id}`} className="rounded-lg bg-[#fff0f0] px-2.5 py-1.5 text-[10px] font-bold text-[#b33d43]">{deletingId === `farm-${farm.id}` ? "Deleting…" : "Delete"}</button></div></div><h3 className="mt-4 text-lg font-extrabold">{farm.farm_name}</h3><p className="mt-1 flex items-center gap-1 text-sm text-[#718078]"><MapPin size={14}/>{farm.village}, {farm.district}, {farm.state}</p><div className="mt-4 grid gap-2 sm:grid-cols-2"><Row label="Area" value={`${farm.area} ${farm.area_unit || "acre"}`}/><Row label="Irrigation" value={farm.irrigation_type}/><Row label="Latitude" value={farm.latitude}/><Row label="Longitude" value={farm.longitude}/></div></Card>)}{!farms.length && <div className="md:col-span-2"><Empty text="No farms are registered yet. Add your first farm."/></div>}</div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {items.map((farm) => (
+            <Card key={farm.id}>
+              <div className="flex items-start justify-between">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf7ee] text-[#176b3e]">
+                  <Tractor size={21}/>
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#176b3e]">Farm #{farm.id}</span>
+                  <button type="button" onClick={() => deleteFarm(farm)} disabled={deletingId === `farm-${farm.id}`} className="rounded-lg bg-[#fff0f0] px-2.5 py-1.5 text-[10px] font-bold text-[#b33d43]">
+                    {deletingId === `farm-${farm.id}` ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-extrabold">{farm.farm_name}</h3>
+              <p className="mt-1 flex items-center gap-1 text-sm text-[#718078]">
+                <MapPin size={14}/>{farm.village}, {farm.district}, {farm.state}
+              </p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <Row label="Area" value={`${farm.area} ${farm.area_unit || "acre"}`}/>
+                <Row label="Irrigation" value={farm.irrigation_type}/>
+                <Row label="Latitude" value={farm.latitude}/>
+                <Row label="Longitude" value={farm.longitude}/>
+              </div>
+            </Card>
+          ))}
+          {!items.length && <div className="md:col-span-2"><Empty text="No farms are registered yet. Add your first farm."/></div>}
+        </div>
         {modal === "farm" && <FormModal title="Add a farm" onClose={() => setModal(null)}><form onSubmit={saveFarm} className="space-y-3">{[["Farm name","farm_name"],["State","state"],["District","district"],["Village","village"],["Area","area"]].map(([label,key]) => <label key={key} className="block"><span className="mb-1.5 block text-xs font-bold">{label}</span><input required value={farmForm[key]} onChange={(e) => setFarmForm({ ...farmForm, [key]: e.target.value })} type={key === "area" ? "number" : "text"} className="w-full rounded-xl border border-[#d9e3da] bg-[#fafcf9] px-3 py-2.5 text-sm outline-none focus:border-[#176b3e]"/></label>)}<div className="grid grid-cols-2 gap-3"><label className="block"><span className="mb-1.5 block text-xs font-bold">Area unit</span><select value={farmForm.area_unit} onChange={(e) => setFarmForm({ ...farmForm, area_unit: e.target.value })} className="w-full rounded-xl border px-3 py-2.5 text-sm"><option>acre</option><option>bigha</option><option>hectare</option></select></label><label className="block"><span className="mb-1.5 block text-xs font-bold">Irrigation</span><input value={farmForm.irrigation_type} onChange={(e) => setFarmForm({ ...farmForm, irrigation_type: e.target.value })} className="w-full rounded-xl border px-3 py-2.5 text-sm" placeholder="Borewell"/></label></div><div className="grid grid-cols-2 gap-3"><input value={farmForm.latitude} onChange={(e) => setFarmForm({ ...farmForm, latitude: e.target.value })} placeholder="Latitude (optional)" className="rounded-xl border px-3 py-2.5 text-sm"/><input value={farmForm.longitude} onChange={(e) => setFarmForm({ ...farmForm, longitude: e.target.value })} placeholder="Longitude (optional)" className="rounded-xl border px-3 py-2.5 text-sm"/></div><button disabled={busy} className="w-full rounded-xl bg-[#176b3e] py-3 text-sm font-bold text-white">{busy ? "Saving…" : "Save farm"}</button></form></FormModal>}
       </>}
 
       {section === "My Crops" && <>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-extrabold">My Crops</h2><p className="mt-1 text-sm text-[#718078]">Keep crop records ready for procurement booking.</p></div><button type="button" onClick={() => { setError(""); setCropForm({ farm_id: farms[0]?.id || "", crop_name: "", season: "", sowing_date: "", expected_harvest_date: "", expected_quantity: "", quantity_unit: "quintal", status: "GROWING" }); setModal("crop"); }} className="inline-flex items-center gap-2 rounded-xl bg-[#176b3e] px-4 py-2.5 text-sm font-bold text-white"><span>＋</span>Add crop</button></div>
-        <div className="grid gap-4 md:grid-cols-2">{crops.map((crop) => <Card key={crop.id}><div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf7ee] text-[#176b3e]"><Wheat size={21}/></span><div><h3 className="font-extrabold">{crop.crop_name}</h3><p className="text-xs text-[#718078]">Farm #{crop.farm_id} · {crop.season || "Season not set"}</p></div><div className="ml-auto flex items-center gap-2"><span className="rounded-full bg-[#edf7ee] px-2.5 py-1 text-[10px] font-bold text-[#176b3e]">{pretty(crop.status)}</span><button type="button" onClick={() => deleteCrop(crop)} disabled={deletingId === `crop-${crop.id}`} className="rounded-lg bg-[#fff0f0] px-2.5 py-1.5 text-[10px] font-bold text-[#b33d43]">{deletingId === `crop-${crop.id}` ? "Deleting…" : "Delete"}</button></div></div><div className="mt-4 grid gap-2 sm:grid-cols-2"><Row label="Expected quantity" value={`${crop.expected_quantity} ${crop.quantity_unit || "quintal"}`}/><Row label="Sowing" value={date(crop.sowing_date)}/><Row label="Harvest" value={date(crop.expected_harvest_date)}/><Row label="Crop ID" value={crop.id}/></div></Card>)}{!crops.length && <div className="md:col-span-2"><Empty text="No crops are linked yet. Add your first crop."/></div>}</div>
-        {modal === "crop" && <FormModal title="Add a crop" onClose={() => setModal(null)}><form onSubmit={saveCrop} className="space-y-3"><label className="block"><span className="mb-1.5 block text-xs font-bold">Farm</span><select required value={cropForm.farm_id} onChange={(e) => setCropForm({ ...cropForm, farm_id: e.target.value })} className="w-full rounded-xl border px-3 py-2.5 text-sm"><option value="">Select farm</option>{farms.map((farm) => <option key={farm.id} value={farm.id}>{farm.farm_name}</option>)}</select></label><input required value={cropForm.crop_name} onChange={(e) => setCropForm({ ...cropForm, crop_name: e.target.value })} placeholder="Crop name" className="w-full rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.season} onChange={(e) => setCropForm({ ...cropForm, season: e.target.value })} placeholder="Season" className="w-full rounded-xl border px-3 py-2.5 text-sm"/><div className="grid grid-cols-2 gap-3"><input value={cropForm.sowing_date} onChange={(e) => setCropForm({ ...cropForm, sowing_date: e.target.value })} type="date" className="rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.expected_harvest_date} onChange={(e) => setCropForm({ ...cropForm, expected_harvest_date: e.target.value })} type="date" className="rounded-xl border px-3 py-2.5 text-sm"/></div><div className="grid grid-cols-2 gap-3"><input required value={cropForm.expected_quantity} onChange={(e) => setCropForm({ ...cropForm, expected_quantity: e.target.value })} type="number" min="0.01" placeholder="Quantity" className="rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.quantity_unit} onChange={(e) => setCropForm({ ...cropForm, quantity_unit: e.target.value })} placeholder="quintal" className="rounded-xl border px-3 py-2.5 text-sm"/></div><button disabled={busy} className="w-full rounded-xl bg-[#176b3e] py-3 text-sm font-bold text-white">{busy ? "Saving…" : "Save crop"}</button></form></FormModal>}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-2xl font-extrabold">My Crops</h2><p className="mt-1 text-sm text-[#718078]">Keep crop records ready for procurement booking.</p></div><button type="button" onClick={() => { setError(""); setCropForm({ farm_id: farms[0]?.id || "", crop_name: "", season: "Kharif", sowing_date: new Date().toISOString().split("T")[0], expected_harvest_date: "", expected_quantity: "", quantity_unit: "quintal", status: "GROWING" }); setModal("crop"); }} className="inline-flex items-center gap-2 rounded-xl bg-[#176b3e] px-4 py-2.5 text-sm font-bold text-white"><span>＋</span>Add crop</button></div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {items.map((crop) => (
+            <Card key={crop.id}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf7ee] text-[#176b3e]">
+                  <Wheat size={21}/>
+                </span>
+                <div>
+                  <h3 className="font-extrabold">{crop.crop_name}</h3>
+                  <p className="text-xs text-[#718078]">Farm #{crop.farm_id} · {crop.season || "Season not set"}</p>
+                </div>
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="rounded-full bg-[#edf7ee] px-2.5 py-1 text-[10px] font-bold text-[#176b3e]">{pretty(crop.status)}</span>
+                  <button type="button" onClick={() => deleteCrop(crop)} disabled={deletingId === `crop-${crop.id}`} className="rounded-lg bg-[#fff0f0] px-2.5 py-1.5 text-[10px] font-bold text-[#b33d43]">
+                    {deletingId === `crop-${crop.id}` ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                <Row label="Expected quantity" value={`${crop.expected_quantity} ${crop.quantity_unit || "quintal"}`}/>
+                <Row label="Sowing" value={date(crop.sowing_date)}/>
+                <Row label="Harvest" value={date(crop.expected_harvest_date)}/>
+                <Row label="Crop ID" value={crop.id}/>
+              </div>
+            </Card>
+          ))}
+          {!items.length && <div className="md:col-span-2"><Empty text="No crops are linked yet. Add your first crop."/></div>}
+        </div>
+        {modal === "crop" && <FormModal title="Add a crop" onClose={() => setModal(null)}><form onSubmit={saveCrop} className="space-y-3"><label className="block"><span className="mb-1.5 block text-xs font-bold">Farm</span><select value={cropForm.farm_id} onChange={(e) => setCropForm({ ...cropForm, farm_id: e.target.value })} className="w-full rounded-xl border px-3 py-2.5 text-sm">{farms.length === 0 ? <option value="">Default Farm (Chhutmalpur, Saharanpur)</option> : farms.map((farm) => <option key={farm.id} value={farm.id}>{farm.farm_name} ({farm.village || "Farm"})</option>)}</select></label><input required value={cropForm.crop_name} onChange={(e) => setCropForm({ ...cropForm, crop_name: e.target.value })} placeholder="Crop name (e.g. Rice, Wheat)" className="w-full rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.season} onChange={(e) => setCropForm({ ...cropForm, season: e.target.value })} placeholder="Season (e.g. Kharif, Rabi)" className="w-full rounded-xl border px-3 py-2.5 text-sm"/><div className="grid grid-cols-2 gap-3"><input value={cropForm.sowing_date} onChange={(e) => setCropForm({ ...cropForm, sowing_date: e.target.value })} type="date" className="rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.expected_harvest_date} onChange={(e) => setCropForm({ ...cropForm, expected_harvest_date: e.target.value })} type="date" className="rounded-xl border px-3 py-2.5 text-sm"/></div><div className="grid grid-cols-2 gap-3"><input required value={cropForm.expected_quantity} onChange={(e) => setCropForm({ ...cropForm, expected_quantity: e.target.value })} type="number" min="0.01" placeholder="Quantity" className="rounded-xl border px-3 py-2.5 text-sm"/><input value={cropForm.quantity_unit} onChange={(e) => setCropForm({ ...cropForm, quantity_unit: e.target.value })} placeholder="quintal" className="rounded-xl border px-3 py-2.5 text-sm"/></div><button disabled={busy} className="w-full rounded-xl bg-[#176b3e] py-3 text-sm font-bold text-white">{busy ? "Saving…" : "Save crop"}</button></form></FormModal>}
       </>}
 
       {section === "Find Centre" && <>

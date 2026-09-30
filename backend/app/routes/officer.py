@@ -45,7 +45,7 @@ from app.services.booking_service import (
 )
 from datetime import date
 from fastapi import Query
-from app.schemas.queue import CentreQueueStatusOut, OfficerQueueItemOut, QueueEntryOut
+from app.schemas.queue import CentreQueueStatusOut, OfficerQueueItemOut, QueueEntryOut, OfficerManualEntryCreate
 from app.services.queue_service import (
     call_next_farmer,
     complete_queue_entry,
@@ -262,6 +262,26 @@ def officer_no_show(
     current_user: User = Depends(require_role("OFFICER")),
 ):
     return mark_queue_no_show(db, current_user, queue_entry_id)
+
+
+@router.post("/queue/manual-entry", response_model=QueueEntryOut)
+def officer_manual_entry(
+    payload: OfficerManualEntryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("OFFICER")),
+):
+    from app.services.queue_service import create_officer_manual_entry
+    return create_officer_manual_entry(db, current_user, payload)
+
+
+@router.post("/queue/check-in/{booking_id}", response_model=QueueEntryOut)
+def officer_check_in(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("OFFICER")),
+):
+    from app.services.queue_service import officer_check_in_booking
+    return officer_check_in_booking(db, current_user, booking_id)
 
 @router.get(
     "/procurements",

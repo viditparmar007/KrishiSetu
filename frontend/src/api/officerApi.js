@@ -1,8 +1,10 @@
+import { getAuthToken } from "../utils/authStorage";
+
 const API_ENV = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 const API_URL = API_ENV.endsWith("/api/v1") ? API_ENV : `${API_ENV}/api/v1`;
 
 function headers(extra = {}) {
-  const token = localStorage.getItem("krishisetu_access_token");
+  const token = getAuthToken();
   return {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...extra,
@@ -62,6 +64,10 @@ export const officerApi = {
     request(`/officer/queue/${queueEntryId}/complete`, { method: "POST" }),
   markNoShow: (queueEntryId) =>
     request(`/officer/queue/${queueEntryId}/no-show`, { method: "POST" }),
+  manualEntry: (payload) =>
+    json("POST", "/officer/queue/manual-entry", payload),
+  checkInBooking: (bookingId) =>
+    request(`/officer/queue/check-in/${bookingId}`, { method: "POST" }),
 
   // Bookings List
   getBookings: (dateStr, status) => {

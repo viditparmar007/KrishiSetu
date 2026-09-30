@@ -99,7 +99,7 @@ export default function CentreMap({ centres = [], recommendations = [], farms = 
   };
 
   return (
-    <div className="relative h-full min-h-[520px] overflow-hidden rounded-[26px] border border-[#d8e3da] bg-[#eaf2ea]">
+    <div className="isolate relative z-0 h-full min-h-[520px] overflow-hidden rounded-[26px] border border-[#d8e3da] bg-[#eaf2ea]">
       <MapContainer center={center} zoom={12} scrollWheelZoom className="h-full min-h-[520px] w-full">
         <TileLayer
           url={satellite ? GOOGLE_HYBRID : GOOGLE_STREET}
